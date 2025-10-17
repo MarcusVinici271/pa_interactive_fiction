@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
+		<title>Cronicas_FI</title>
+		<style>
+html, body, #canvas {
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+body {
+	color: white;
+	background-color: black;
+	overflow: hidden;
+	touch-action: none;
+}
+
+#canvas {
+	display: block;
+}
+
+#canvas:focus {
+	outline: none;
+}
+
+#status, #status-splash, #status-progress {
+	position: absolute;
+	left: 0;
+	right: 0;
+}
+
+#status, #status-splash {
+	top: 0;
+	bottom: 0;
+}
+
+#status {
+	background-color: #242424;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	visibility: hidden;
+}
+
+#status-splash {
+	max-height: 100%;
+	max-width: 100%;
+	margin: auto;
+}
+
+#status-splash.show-image--false {
+	display: none;
+}
+
+#status-splash.fullsize--true {
+	height: 100%;
+	width: 100%;
+	object-fit: contain;
+}
+
+#status-splash.use-filter--false {
+	image-rendering: pixelated;
+}
+
+#status-progress, #status-notice {
+	display: none;
+}
+
+#status-progress {
+	bottom: 10%;
+	width: 50%;
+	margin: 0 auto;
+}
+
+#status-notice {
+	background-color: #5b3943;
+	border-radius: 0.5rem;
+	border: 1px solid #9b3943;
+	color: #e0e0e0;
+	font-family: 'Noto Sans', 'Droid Sans', Arial, sans-serif;
+	line-height: 1.3;
+	margin: 0 2rem;
+	overflow: hidden;
+	padding: 1rem;
+	text-align: center;
+	z-index: 1;
+}
+		</style>
+		<link id="-gd-engine-icon" rel="icon" type="image/png" href="web_shell.icon.png" />
+<link rel="apple-touch-icon" href="web_shell.apple-touch-icon.png"/>
+
+	</head>
+	<body>
+		<canvas id="canvas">
+			Your browser does not support the canvas tag.
+		</canvas>
+
+		<noscript>
+			Your browser does not support JavaScript.
+		</noscript>
+
+		<div id="status">
+			<img id="status-splash" class="show-image--true fullsize--true use-filter--true" src="web_shell.png" alt="">
+			<progress id="status-progress"></progress>
+			<div id="status-notice"></div>
+		</div>
+
+		<script src="web_shell.js"></script>
+		<script>
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"web_shell","experimentalVK":false,"fileSizes":{"web_shell.pck":35340,"web_shell.wasm":1588912},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_THREADS_ENABLED = false;
+const engine = new Engine(GODOT_CONFIG);
+
+(function () {
+	const statusOverlay = document.getElementById('status');
+	const statusProgress = document.getElementById('status-progress');
+	const statusNotice = document.getElementById('status-notice');
+
+	let initializing = true;
+	let statusMode = '';
+
+	function setStatusMode(mode) {
+		if (statusMode === mode || !initializing) {
+			return;
+		}
+		if (mode === 'hidden') {
+			statusOverlay.remove();
+			initializing = false;
+			return;
+		}
+		statusOverlay.style.visibility = 'visible';
+		statusProgress.style.display = mode === 'progress' ? 'block' : 'none';
+		statusNotice.style.display = mode === 'notice' ? 'block' : 'none';
+		statusMode = mode;
+	}
+
+	function setStatusNotice(text) {
+		while (statusNotice.lastChild) {
+			statusNotice.removeChild(statusNotice.lastChild);
+		}
+		const lines = text.split('\n');
+		lines.forEach((line) => {
+			statusNotice.appendChild(document.createTextNode(line));
+			statusNotice.appendChild(document.createElement('br'));
+		});
+	}
+
+	function displayFailureNotice(err) {
+		console.error(err);
+		if (err instanceof Error) {
+			setStatusNotice(err.message);
+		} else if (typeof err === 'string') {
+			setStatusNotice(err);
+		} else {
+			setStatusNotice('An unknown error occurred.');
+		}
+		setStatusMode('notice');
+		initializing = false;
+	}
+
+	const missing = Engine.getMissingFeatures({
+		threads: GODOT_THREADS_ENABLED,
+	});
+
+	if (missing.length !== 0) {
+		if (GODOT_CONFIG['serviceWorker'] && GODOT_CONFIG['ensureCrossOriginIsolationHeaders'] && 'serviceWorker' in navigator) {
+			let serviceWorkerRegistrationPromise;
+			try {
+				serviceWorkerRegistrationPromise = navigator.serviceWorker.getRegistration();
+			} catch (err) {
+				serviceWorkerRegistrationPromise = Promise.reject(new Error('Service worker registration failed.'));
+			}
+			// There's a chance that installing the service worker would fix the issue
+			Promise.race([
+				serviceWorkerRegistrationPromise.then((registration) => {
+					if (registration != null) {
+						return Promise.reject(new Error('Service worker already exists.'));
+					}
+					return registration;
+				}).then(() => engine.installServiceWorker()),
+				// For some reason, `getRegistration()` can stall
+				new Promise((resolve) => {
+					setTimeout(() => resolve(), 2000);
+				}),
+			]).then(() => {
+				// Reload if there was no error.
+				window.location.reload();
+			}).catch((err) => {
+				console.error('Error while registering service worker:', err);
+			});
+		} else {
+			// Display the message as usual
+			const missingMsg = 'Error\nThe following features required to run Godot projects on the Web are missing:\n';
+			displayFailureNotice(missingMsg + missing.join('\n'));
+		}
+	} else {
+		setStatusMode('progress');
+		engine.startGame({
+			'onProgress': function (current, total) {
+				if (current > 0 && total > 0) {
+					statusProgress.value = current;
+					statusProgress.max = total;
+				} else {
+					statusProgress.removeAttribute('value');
+					statusProgress.removeAttribute('max');
+				}
+			},
+		}).then(() => {
+			setStatusMode('hidden');
+		}, displayFailureNotice);
+	}
+}());
+
+let godotSceneTree = null;
+
+	// 1. FUNÇÃO TTS
+	function falar_texto(texto) {
+		var utterance = new SpeechSynthesisUtterance(texto);
+		utterance.lang = 'pt-BR';
+		speechSynthesis.speak(utterance);
+	}
+	
+	// 2. FUNÇÃO STT
+	const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+	let recognition = null;
+	
+	if (SpeechRecognition) {
+		recognition = new SpeechRecognition();
+		recognition.lang = 'pt-BR';
+		recognition.interimResults = false;
+		recognition.maxAlternatives = 1;
+
+		recognition.onresult = function(event) {
+			const texto_comando_bruto = event.results[0][0].transcript;
+			
+			// Limpeza: minúsculas e sem pontuação
+			var texto_comando_limpo = texto_comando_bruto.toLowerCase().replace(/[.!,?]/g, '').trim();
+
+            if (godotSceneTree && godotSceneTree.call) {
+				godotSceneTree.call("receber_comando_voz", texto_comando_limpo);
+			}
+		};
+
+		recognition.onerror = function(event) {
+			console.error('Erro no reconhecimento de voz:', event.error);
+			falar_texto("Desculpe, houve um erro no reconhecimento de voz.");
+		};
+
+		// Opcional: Reiniciar o microfone para que o usuário possa dar o próximo comando sem clicar.
+		// Isso aumenta a fluidez e a acessibilidade.
+		recognition.onend = function() {
+		    console.log('Fim da sessão de microfone. Reiniciando escuta...');
+            // Tente reiniciar, mas mantenha a regra de que o usuário tem que clicar para começar.
+		};
+	}
+
+	function iniciar_escuta() {
+		if (recognition) {
+			try {
+				recognition.start();
+				console.log('Microfone ligado. Fale o comando agora...');
+			} catch (error) {
+				if (error.name !== 'InvalidStateError') {
+					console.error('Erro ao iniciar reconhecimento:', error);
+				}
+			}
+		} else {
+			falar_texto('Reconhecimento de voz não suportado neste navegador.');
+		}
+	}
+	
+    // *** CORREÇÃO CRÍTICA DA PONTE ***
+    // Usa o evento onRuntimeInitialized que existe no objeto Module
+    // para garantir que a ponte seja estabelecida após o Godot estar pronto.
+    Module.onRuntimeInitialized = function() {
+        if (Engine.get_main_loop()) {
+            godotSceneTree = Engine.get_main_loop();
+            console.log("Godot SceneTree capturado com sucesso!");
+        } else {
+            console.error("Falha ao capturar Godot SceneTree.");
+        }
+    };
+
+		</script>
+	</body>
+</html>
+
