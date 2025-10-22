@@ -56,7 +56,7 @@ var javascript_bridge_available = false
 func _ready():
 	javascript_bridge_available = Engine.has_singleton("JavaScriptBridge")
 	
-	# Esta linha deve estar COMENTADA se a conexão foi feita via Editor.
+	# Mantenha esta linha comentada, a conexão foi feita via Editor.
 	# entrada_comando.text_entered.connect(processar_entrada) 
 
 	carregar_sala(sala_id_atual) 
@@ -145,6 +145,6 @@ func iniciar_comando_voz():
 func receber_comando_voz(comando: String):
 	print("Comando de voz recebido do JS:", comando)
 	
-	exibir_texto("\n> " + comando) 
-	
-	processar_comando(comando)
+	if comando.length() > 0:
+		exibir_texto("\n> " + comando)
+		processar_comando(comando)
