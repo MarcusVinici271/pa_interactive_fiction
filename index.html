@@ -5,7 +5,7 @@
 		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
 		<title>Cronicas_FI</title>
 		<style>
-html, body, #canvas {
+html, body {
 	margin: 0;
 	padding: 0;
 	border: 0;
@@ -19,7 +19,8 @@ body {
 }
 
 #canvas {
-	display: block;
+	display: flex;
+	justify-content: center;
 }
 
 #canvas:focus {
@@ -28,8 +29,8 @@ body {
 
 #status, #status-splash, #status-progress {
 	position: absolute;
-	left: 50%;
-	
+	left: 0;
+	right: 0;
 }
 
 #status, #status-splash {
@@ -38,7 +39,7 @@ body {
 }
 
 #status {
-	background-color: #242424;
+	background-color: #000000;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
