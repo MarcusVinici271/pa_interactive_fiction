@@ -1,52 +1,9 @@
 extends Control
+const MAPA_SALAS_DADOS = preload("res://mapa_salas.gd")
+const MAPA_DE_DADOS_SALAS = MAPA_SALAS_DADOS.SALAS
 
-var sala_id_atual = "cabana_aconchegante"
 
-var SALAS = {
-	"cabana_aconchegante": {
-		"nome": "Cabana Aconchegante",
-		"descricao": "Você está na aconchegante cabana, seu lar. Há uma porta de madeira ao norte e uma velha escrivaninha de carvalho a leste. O sol da manhã entra pela janela.",
-		"saidas": {
-			"norte": "clareira_ensolarada",
-			"leste": "escrivaninha"
-		}
-	},
-	
-	"clareira_ensolarada": {
-		"nome": "Clareira Ensolarada",
-		"descricao": "Você sai da cabana e encontra um claro ensolarado. O cheiro de pinho está forte no ar. A cabana fica ao sul, e você vê uma trilha larga seguindo para o oeste.",
-		"saidas": {
-			"sul": "cabana_aconchegante",
-			"oeste": "trilha_estreita"
-		}
-	},
-	
-	"trilha_estreita": {
-		"nome": "Trilha Estreita",
-		"descricao": "A trilha fica mais escura e estreita à medida que a floresta se fecha sobre você. Você ouve o som de água corrente à distância, ao norte. A clareira ensolarada está a leste.",
-		"saidas": {
-			"leste": "clareira_ensolarada",
-			"norte": "cascata_escondida"
-		}
-	},
-	
-	"cascata_escondida": {
-		"nome": "Cascata Escondida",
-		"descricao": "Você chega a uma pequena cascata escondida, onde a água desce sobre rochas cobertas de musgo. Há um nicho sombrio atrás da água. A trilha continua, subindo íngreme, a oeste.",
-		"saidas": {
-			"sul": "trilha_estreita",
-			"oeste": "topo_do_penhasco"
-		}
-	},
-
-	"topo_do_penhasco": {
-		"nome": "Topo do Penhasco",
-		"descricao": "O vento chicoteia em seu rosto. Você está no topo de um penhasco rochoso, com uma vista deslumbrante da floresta abaixo. Você não pode ir mais longe a oeste ou norte.",
-		"saidas": {
-			"leste": "cascata_escondida",
-		}
-	}
-}
+var sala_id_atual = "inicio"
 
 var javascript_bridge_available = false
 
@@ -62,9 +19,9 @@ func _ready():
 	carregar_sala(sala_id_atual) 
 
 func carregar_sala(novo_id: String):
-	if SALAS.has(novo_id):
+	if MAPA_DE_DADOS_SALAS.has(novo_id):
 		sala_id_atual = novo_id
-		var nova_sala = SALAS[novo_id]
+		var nova_sala = MAPA_DE_DADOS_SALAS[novo_id]
 		
 		var texto_completo = "--- " + nova_sala.nome + " ---\n" + nova_sala.descricao
 		exibir_texto("\n" + texto_completo)
@@ -88,7 +45,7 @@ func processar_comando(comando: String):
 	var comando_limpo = comando.to_lower().strip_edges()
 	var palavras = comando_limpo.split(" ")
 	var resposta = "Comando não reconhecido."
-	var sala_data = SALAS[sala_id_atual]
+	var sala_data = MAPA_DE_DADOS_SALAS[sala_id_atual]
 	
 	var direcao = ""
 
@@ -120,7 +77,7 @@ func processar_comando(comando: String):
 	if direcao != "":
 		var id_destino = sala_data.saidas[direcao]
 		
-		if SALAS.has(id_destino):
+		if MAPA_DE_DADOS_SALAS.has(id_destino):
 			carregar_sala(id_destino)
 			return
 		else:

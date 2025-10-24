@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="en">
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
 		<title>Cronicas_FI</title>
 		<style>
-html, body {
+html, body, #canvas {
 	margin: 0;
 	padding: 0;
 	border: 0;
@@ -19,8 +19,7 @@ body {
 }
 
 #canvas {
-	display: flex;
-	justify-content: center;
+	display: block;
 }
 
 #canvas:focus {
@@ -39,7 +38,7 @@ body {
 }
 
 #status {
-	background-color: #000000;
+	background-color: #242424;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
@@ -91,8 +90,9 @@ body {
 	z-index: 1;
 }
 		</style>
-		<link id="-gd-engine-icon" rel="icon" type="image/png" href="web_shell.icon.png" />
-<link rel="apple-touch-icon" href="web_shell.apple-touch-icon.png"/>
+		<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
+<link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
+<link rel="manifest" href="index.manifest.json">
 
 	</head>
 	<body>
@@ -105,14 +105,14 @@ body {
 		</noscript>
 
 		<div id="status">
-			<img id="status-splash" class="show-image--true fullsize--true use-filter--true" src="web_shell.png" alt="">
+			<img id="status-splash" class="show-image--true fullsize--true use-filter--true" src="index.png" alt="">
 			<progress id="status-progress"></progress>
 			<div id="status-notice"></div>
 		</div>
 
-		<script src="web_shell.js"></script>
+		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"web_shell","experimentalVK":false,"fileSizes":{"web_shell.pck":35340,"web_shell.wasm":1588912},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":104584,"index.wasm":1588912},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4,"serviceWorker":"index.service.worker.js"};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
@@ -215,77 +215,6 @@ const engine = new Engine(GODOT_CONFIG);
 		}, displayFailureNotice);
 	}
 }());
-
-let godotSceneTree = null;
-
-	// 1. FUNÇÃO TTS
-	function falar_texto(texto) {
-		var utterance = new SpeechSynthesisUtterance(texto);
-		utterance.lang = 'pt-BR';
-		speechSynthesis.speak(utterance);
-	}
-	
-	// 2. FUNÇÃO STT
-	const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-	let recognition = null;
-	
-	if (SpeechRecognition) {
-		recognition = new SpeechRecognition();
-		recognition.lang = 'pt-BR';
-		recognition.interimResults = false;
-		recognition.maxAlternatives = 1;
-
-		recognition.onresult = function(event) {
-			const texto_comando_bruto = event.results[0][0].transcript;
-			
-			// Limpeza: minúsculas e sem pontuação
-			var texto_comando_limpo = texto_comando_bruto.toLowerCase().replace(/[.!,?]/g, '').trim();
-
-            if (godotSceneTree && godotSceneTree.call) {
-				godotSceneTree.call("receber_comando_voz", texto_comando_limpo);
-			}
-		};
-
-		recognition.onerror = function(event) {
-			console.error('Erro no reconhecimento de voz:', event.error);
-			falar_texto("Desculpe, houve um erro no reconhecimento de voz.");
-		};
-
-		// Opcional: Reiniciar o microfone para que o usuário possa dar o próximo comando sem clicar.
-		// Isso aumenta a fluidez e a acessibilidade.
-		recognition.onend = function() {
-		    console.log('Fim da sessão de microfone. Reiniciando escuta...');
-            // Tente reiniciar, mas mantenha a regra de que o usuário tem que clicar para começar.
-		};
-	}
-
-	function iniciar_escuta() {
-		if (recognition) {
-			try {
-				recognition.start();
-				console.log('Microfone ligado. Fale o comando agora...');
-			} catch (error) {
-				if (error.name !== 'InvalidStateError') {
-					console.error('Erro ao iniciar reconhecimento:', error);
-				}
-			}
-		} else {
-			falar_texto('Reconhecimento de voz não suportado neste navegador.');
-		}
-	}
-	
-    // *** CORREÇÃO CRÍTICA DA PONTE ***
-    // Usa o evento onRuntimeInitialized que existe no objeto Module
-    // para garantir que a ponte seja estabelecida após o Godot estar pronto.
-    Module.onRuntimeInitialized = function() {
-        if (Engine.get_main_loop()) {
-            godotSceneTree = Engine.get_main_loop();
-            console.log("Godot SceneTree capturado com sucesso!");
-        } else {
-            console.error("Falha ao capturar Godot SceneTree.");
-        }
-    };
-
 		</script>
 	</body>
 </html>

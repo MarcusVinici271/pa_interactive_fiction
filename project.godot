@@ -8,12 +8,22 @@
 
 config_version=5
 
+[accessibility]
+
+general/accessibility_support=1
+
 [application]
 
 config/name="Cronicas_FI"
 run/main_scene="uid://c6mnkysrpypgd"
 config/features=PackedStringArray("4.5", "GL Compatibility")
 config/icon="res://icon.svg"
+
+[display]
+
+window/size/initial_position=Vector2i(50, 50)
+window/stretch/mode="canvas_items"
+window/stretch/scale=1.5
 
 [rendering]
 
