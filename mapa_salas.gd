@@ -9,7 +9,6 @@ const SALAS = {
 			"inicio": "cabana_aconchegante",
 		}
 	},
-	
 	"cabana_aconchegante": {
 		"nome": "Cabana Aconchegante",
 		"descricao": "Você está na aconchegante cabana, seu lar. Há uma porta de madeira ao norte e uma velha escrivaninha de carvalho a leste. O sol da manhã entra pela janela.",
@@ -18,7 +17,6 @@ const SALAS = {
 			"leste": "escrivaninha"
 		}
 	},
-	
 	"clareira_ensolarada": {
 		"nome": "Clareira Ensolarada",
 		"descricao": "Você sai da cabana e encontra um claro ensolarado. O cheiro de pinho está forte no ar. A cabana fica ao sul, e você vê uma trilha larga seguindo para o oeste.",
