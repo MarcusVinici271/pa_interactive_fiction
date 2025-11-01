@@ -17,6 +17,7 @@ general/accessibility_support=1
 config/name="Cronicas_FI"
 run/main_scene="uid://c6mnkysrpypgd"
 config/features=PackedStringArray("4.5", "GL Compatibility")
+boot_splash/bg_color=Color(0, 0, 0, 1)
 config/icon="res://icon.svg"
 
 [display]
@@ -30,3 +31,4 @@ window/stretch/scale=1.5
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
 textures/vram_compression/import_etc2_astc=true
+environment/defaults/default_clear_color=Color(0, 0, 0, 1)
