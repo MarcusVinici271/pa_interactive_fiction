@@ -1,2 +1,4 @@
 res://scenes/GameManager.tscn
-res://data/all_rooms.tres
+res://scripts/config.gd
+res://scripts/game_manager.gd
+res://scenes/Room.tscn

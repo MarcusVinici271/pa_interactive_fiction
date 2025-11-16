@@ -22,6 +22,16 @@ var _current_font_size: int = 30
 const _FONT_SIZE_MIN: int = 16
 const _FONT_SIZE_MAX: int = 48
 const _FONT_SIZE_STEP: int = 2
+# --- INÍCIO: CORES DE FONTE ---
+var _primary_color: Color = Color.WHITE  
+var _secondary_color: Color = Color("#00f7a8")
+# --- INÍCIO: FONTE ---
+var fonts: Dictionary = {
+	"Fonte Padrao" : preload("res://assets/fonts/fonte_1/Exo_2/Exo2-Italic-VariableFont_wght.ttf"),
+	"Fonte Sono" : preload("res://assets/fonts/fonte_1/Sono/static/Sono-Bold.ttf"),
+	"Fonte Outfit": preload("res://assets/fonts/fonte_1/Outfit/static/Outfit-Bold.ttf")
+}
+var _selected_font: Font = fonts["Fonte Padrao"]
 
 # Referências para os labels que precisam ser atualizados
 @onready var _caret_label: Label = $Interface/MarginContainer/HBoxContainer/Rows/HBoxContainer/InputArea/HBoxContainer/Caret
@@ -60,7 +70,12 @@ O jogo não pode começar.")
 	# Define o tamanho da fonte inicial para todos os elementos
 	_update_all_font_sizes()
 	# --- FIM: Adição para Tamanho da Fonte ---
-
+	# --- INÍCIO: Troca de Cores dos textos ---
+	_color_change()
+	# --- FIM: Troca de Cores dos textos ---
+	# --- INÍCIO: Troca de Fontes dos textos ---
+	_update_all_fonts(_selected_font)
+	# --- FIM: Troca de Cores dos textos ---
 func _start_game() -> void:
 	if command_processor and room_scene:
 		var starting_room = command_processor.get_starting_room_data()
@@ -181,7 +196,9 @@ func _add_response_to_game(response: Control) -> void:
 	# Aplica o tamanho da fonte atual ao novo nó ANTES de adicioná-lo
 	_apply_font_size_to_node(response, _current_font_size)
 	# --- FIM: Adição para Tamanho da Fonte ---
-	
+	# --- INÍCIO: Adição para Cor da Fonte ---
+	_apply_color_to_node(response)
+	# --- FIM: Adição para Cor da Fonte ---
 	history_rows_node.add_child(response)
 	_delete_input_beyond_limit()
 
@@ -245,3 +262,116 @@ func _on_aumentar_button_down() -> void:
 	_current_font_size = min(_FONT_SIZE_MAX, _current_font_size + _FONT_SIZE_STEP)
 	_update_all_font_sizes()
 # --- FIM: Implementação dos Botões de Fonte ---
+
+@onready var cpb2: ColorPickerButton = $Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/CorFonte2/ColorPickerButton
+@onready var cpb1: ColorPickerButton = $Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/CorFonte/ColorPickerButton
+@onready var color_buttons: =[cpb1, cpb2]
+func _color_change():
+	call_deferred("iniciar_conexoes")
+func iniciar_conexoes():
+	for b in color_buttons:
+		if b:
+			b.picker_created.connect(_on_picker_created.bind(b))
+			b.color_changed.connect(_on_color_selected.bind(b))
+
+func _on_picker_created(button: ColorPickerButton):
+	var picker = button.get_picker()
+	if picker:
+		
+		picker.sliders_visible = false
+		picker.color_modes_visible = false
+		picker.presets_visible = false
+		picker.sampler_visible = false
+		picker.hex_visible = false
+		picker.edit_alpha = false 
+		picker.edit_intensity = false
+
+func _on_color_selected(color: Color, button: ColorPickerButton):
+	if button == cpb1:
+		_primary_color = color
+	elif button == cpb2:
+		_secondary_color = color
+
+	_update_all_text_colors()
+	
+func _update_all_text_colors():
+	# 1. Input e caret
+	if input_node:
+		input_node.set("theme_override_colors/font_color", _primary_color)
+
+	if _caret_label:
+		_caret_label.set("theme_override_colors/font_color", _primary_color)
+
+	# 2. Textos da Config
+	if _config_title_label:
+		_config_title_label.set("theme_override_colors/default_color", _primary_color)
+	if _config_font_label:
+		_config_font_label.set("theme_override_colors/default_color", _primary_color)
+
+	# 3. Atualizar textos já existentes no histórico
+	if history_rows_node:
+		for child in history_rows_node.get_children():
+			_apply_color_to_node(child)
+func _apply_color_to_node(node: Control):
+	var rich_text_labels = node.find_children("", "RichTextLabel", true, false)
+	for label in rich_text_labels:
+		# Se o label for Nome ou Saidas, aplica a cor secundária
+		if label.name in ["Name", "Exits"]:
+			label.set("theme_override_colors/default_color", _secondary_color)
+			label.set("theme_override_colors/font_color", _secondary_color)
+		else:
+			label.set("theme_override_colors/default_color", _primary_color)
+			label.set("theme_override_colors/font_color", _primary_color)
+		
+	var labels = node.find_children("", "Label", true, false)
+	for label in labels:
+		# Mesma lógica para Labels simples
+		if label.name in ["NameLabel", "Exits"]:
+			label.set("theme_override_colors/font_color", _secondary_color)
+		else:
+			label.set("theme_override_colors/font_color", _primary_color)
+		
+@onready var font_selector: OptionButton = $Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/TrocarFonte/FontSelector
+
+func _fontes():
+	# Popula o OptionButton
+	for nome in fonts.keys():
+		font_selector.add_item(nome)
+
+	# Conecta sinal
+	font_selector.item_selected.connect(_on_font_selected)
+	
+func _on_font_selected(index: int) -> void:
+	var selected_name = font_selector.get_item_text(index)
+	var _selected_font  = fonts[selected_name]
+	
+	# Atualiza todas as labels
+	_update_all_fonts(_selected_font)
+	
+func _update_all_fonts(new_font_file: FontFile) -> void:
+	# Input (LineEdit)
+	if input_node:
+		input_node.add_theme_font_override("font", new_font_file)
+
+	# Caret (Label ou RichTextLabel)
+	if _caret_label:
+		_caret_label.add_theme_font_override("font", new_font_file)
+
+	# Textos da Config (RichTextLabel)
+	if _config_title_label:
+		_config_title_label.add_theme_font_override("font", new_font_file)
+	if _config_font_label:
+		_config_font_label.add_theme_font_override("font", new_font_file)
+
+	# Histórico de mensagens
+	if history_rows_node:
+		for child in history_rows_node.get_children():
+			_apply_font_to_node(child, new_font_file)
+
+
+			
+func _apply_font_to_node(node: Control, new_font: FontFile) -> void:
+	for label in node.find_children("", "Label", true, false):
+		label.add_theme_font_override("font", new_font)
+	for rlabel in node.find_children("", "RichTextLabel", true, false):
+		rlabel.add_theme_font_override("font", new_font)
