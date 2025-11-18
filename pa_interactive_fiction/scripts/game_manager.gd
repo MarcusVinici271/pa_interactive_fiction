@@ -81,6 +81,9 @@ func _start_game() -> void:
 		var starting_room = command_processor.get_starting_room_data()
 		if not starting_room.is_empty():
 			_add_room_node_to_game(starting_room)
+			if player.localizacao:
+				var nome_audio = player.localizacao
+				AudioPlayer.tocar_audio_da_sala(nome_audio)
 		else:
 			printerr("Erro: Não foi possível obter a sala inicial.")
 	else:
@@ -108,7 +111,10 @@ func _on_input_submitted(new_text: String) -> void:
 	if result.type == command_processor.ResultType.ROOM:
 		input_response_instance.set_text(new_text, result.message)
 		_add_room_node_to_game(result.room)
-		
+		if player.localizacao:
+			var nome_audio = player.localizacao
+			AudioPlayer.tocar_audio_da_sala(nome_audio)
+			
 	elif result.type == command_processor.ResultType.MESSAGE:
 		input_response_instance.set_text(new_text, result.message)
 		
@@ -122,6 +128,9 @@ func _on_input_submitted(new_text: String) -> void:
 				input_response_instance.set_text(new_text, result.message)
 				var new_room_data = command_processor.get_room_data(player.localizacao)
 				_add_room_node_to_game(new_room_data)
+				if player.localizacao:
+					var nome_audio = player.localizacao
+					AudioPlayer.tocar_audio_da_sala(nome_audio)
 			else:
 				input_response_instance.set_text(new_text, "Falha ao carregar: nenhum 
 jogo salvo encontrado.")

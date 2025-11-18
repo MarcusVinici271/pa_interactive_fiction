@@ -1,1 +1,6 @@
-res://scenes/GameManager.tscn
+res://data/room_database.gd
+res://scenes/AudioPlayerManager.tscn
+res://scenes/audio_player_manager.gd
+res://scripts/game_manager.gd
+res://audio_player_manager.gd
+res://scripts/audio_player_manager.gd
