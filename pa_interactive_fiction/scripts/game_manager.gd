@@ -15,7 +15,23 @@ const SAVE_FILE_PATH = "user://savegame.dat"
 
 var _scroll_bar: VScrollBar
 var _max_scroll_length: float = 0.0
-
+var _interacao_inicial_feita = false
+func _tentar_iniciar_audio() -> void:
+	if not _interacao_inicial_feita:
+		# ... (código que toca o áudio e verifica se o Autoload está tocando) ...
+		
+		if AudioPlayer.playing:
+			_interacao_inicial_feita = true
+			
+			# Se você usar _gui_input, você não precisa desativar o input, 
+			# pois o 'if not _audio_ativado_por_interacao' já controla a repetição.
+			# No entanto, se quiser ser estritamente eficiente, 
+			# você pode desconectar o processamento do input aqui:
+			set_process_input(false) # Desativa a captura de input genérico se necessário
+func _gui_input(event: InputEvent) -> void:
+	# Captura eventos GUI (mouse, toque) dentro do limite do GameManager (Control)
+	if event is InputEventMouseButton:
+		_tentar_iniciar_audio()
 # --- INÍCIO: Adições para Tamanho da Fonte ---
 # Rastreia o tamanho da fonte atual
 var _current_font_size: int = 30
@@ -81,9 +97,9 @@ func _start_game() -> void:
 		var starting_room = command_processor.get_starting_room_data()
 		if not starting_room.is_empty():
 			_add_room_node_to_game(starting_room)
-			if player.localizacao:
-				var nome_audio = player.localizacao
-				AudioPlayer.tocar_audio_da_sala(nome_audio)
+			#if player.localizacao:
+				#var nome_audio = player.localizacao
+				#AudioPlayer.tocar_audio_da_sala(nome_audio)
 		else:
 			printerr("Erro: Não foi possível obter a sala inicial.")
 	else:
