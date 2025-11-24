@@ -16,18 +16,23 @@ const SAVE_FILE_PATH = "user://savegame.dat"
 var _scroll_bar: VScrollBar
 var _max_scroll_length: float = 0.0
 var _interacao_inicial_feita = false
+var _audio_habilitado: bool = false
 func _tentar_iniciar_audio() -> void:
-	if not _interacao_inicial_feita:
-		# ... (código que toca o áudio e verifica se o Autoload está tocando) ...
-		
-		if AudioPlayer.playing:
-			_interacao_inicial_feita = true
-			
-			# Se você usar _gui_input, você não precisa desativar o input, 
-			# pois o 'if not _audio_ativado_por_interacao' já controla a repetição.
-			# No entanto, se quiser ser estritamente eficiente, 
-			# você pode desconectar o processamento do input aqui:
-			set_process_input(false) # Desativa a captura de input genérico se necessário
+	if not _interacao_inicial_feita and _audio_habilitado:
+		# O restante da lógica de interação inicial (mouse/teclado)
+		var starting_room = command_processor.get_starting_room_data()
+		if starting_room and starting_room.has("Nome"):
+			AudioPlayer.tocar_audio_da_sala(player.localizacao)
+
+			if AudioPlayer.playing:
+				_interacao_inicial_feita = true
+				
+func _tocar_audio_sala_atual() -> void:
+	# Esta função só checa o flag de preferência do jogador
+	if _audio_habilitado and player.localizacao:
+		var nome_audio = player.localizacao
+		AudioPlayer.tocar_audio_da_sala(nome_audio)
+				
 func _gui_input(event: InputEvent) -> void:
 	# Captura eventos GUI (mouse, toque) dentro do limite do GameManager (Control)
 	if event is InputEventMouseButton:
@@ -54,7 +59,8 @@ var _selected_font: Font = fonts["Fonte Padrao"]
 @onready var _config_title_label: RichTextLabel = $Interface/MarginContainer/HBoxContainer/VBoxContainer/Config/MarginContainer2/VBoxContainer/PanelContainer/RichTextLabel
 @onready var _config_font_label: RichTextLabel = $Interface/MarginContainer/HBoxContainer/VBoxContainer/Config/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/HBoxContainer/RichTextLabel
 # --- FIM: Adições para Tamanho da Fonte ---
-
+@onready var _audio_on_button: Button = $Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/Audio/On_audio
+@onready var _audio_off_button: Button = $Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/Audio/Off_audio
 func _ready() -> void:
 	if input_node:
 		input_node.text_submitted.connect(_on_input_submitted)
@@ -92,6 +98,12 @@ O jogo não pode começar.")
 	# --- INÍCIO: Troca de Fontes dos textos ---
 	_update_all_fonts(_selected_font)
 	# --- FIM: Troca de Cores dos textos ---
+	# --- INÍCIO: Audio on e off ---
+	if _audio_on_button and _audio_off_button:
+		_audio_on_button.pressed.connect(_on_audio_on_pressed)
+		_audio_off_button.pressed.connect(_on_audio_off_pressed)
+#_update_audio_buttons_ui()
+# --- FIM: Audio on e off ---
 func _start_game() -> void:
 	if command_processor and room_scene:
 		var starting_room = command_processor.get_starting_room_data()
@@ -106,8 +118,8 @@ func _start_game() -> void:
 		printerr("Erro ao iniciar o jogo: CommandProcessor ou RoomScene não estão definidos.")
 
 func _on_input_submitted(new_text: String) -> void:
-	if not input_response_scene or not \
-	history_rows_node or not input_node or not command_processor or not player:
+	# --- 1. VERIFICAÇÕES DE PRÉ-REQUISITOS E INPUT ---
+	if not input_response_scene or not history_rows_node or not input_node or not command_processor or not player:
 		printerr("Erro: verifique se todos os nós (Input, History, Scene, CommandProcessor, Player) estão atribuídos.")
 		return
 
@@ -124,32 +136,38 @@ func _on_input_submitted(new_text: String) -> void:
 	var input_response_instance = input_response_scene.instantiate()
 	_add_response_to_game(input_response_instance)
 
-	if result.type == command_processor.ResultType.ROOM:
-		input_response_instance.set_text(new_text, result.message)
-		_add_room_node_to_game(result.room)
-		if player.localizacao:
-			var nome_audio = player.localizacao
-			AudioPlayer.tocar_audio_da_sala(nome_audio)
-			
-	elif result.type == command_processor.ResultType.MESSAGE:
-		input_response_instance.set_text(new_text, result.message)
-		
-	elif result.type == command_processor.ResultType.META:
-		if result.command == "save":
-			_save_game()
+	# --- 2. PROCESSAMENTO DE COMANDO ---
+	
+	match result.type:
+		command_processor.ResultType.ROOM:
+			# Comando de movimento: atualiza a sala e toca o áudio
 			input_response_instance.set_text(new_text, result.message)
-		elif result.command == "load":
-			var load_success = _load_game()
-			if load_success:
+			_add_room_node_to_game(result.room)
+			_tocar_audio_sala_atual()
+			
+		command_processor.ResultType.MESSAGE:
+			# Comando que retorna apenas uma mensagem (ex: olhar)
+			input_response_instance.set_text(new_text, result.message)
+			
+		command_processor.ResultType.META:
+			if result.command == "save":
+				_save_game()
 				input_response_instance.set_text(new_text, result.message)
-				var new_room_data = command_processor.get_room_data(player.localizacao)
-				_add_room_node_to_game(new_room_data)
-				if player.localizacao:
-					var nome_audio = player.localizacao
-					AudioPlayer.tocar_audio_da_sala(nome_audio)
-			else:
-				input_response_instance.set_text(new_text, "Falha ao carregar: nenhum 
-jogo salvo encontrado.")
+				
+			elif result.command == "load":
+				var load_success = _load_game()
+				
+				if load_success:
+					input_response_instance.set_text(new_text, result.message)
+					
+					# Recarrega a sala após o load
+					var new_room_data = command_processor.get_room_data(player.localizacao)
+					_add_room_node_to_game(new_room_data)
+					
+					
+					_tocar_audio_sala_atual()
+				else:
+					input_response_instance.set_text(new_text, "Falha ao carregar: nenhum jogo salvo encontrado.")
 
 	input_node.text = ""
 
@@ -400,3 +418,24 @@ func _apply_font_to_node(node: Control, new_font: FontFile) -> void:
 		label.add_theme_font_override("font", new_font)
 	for rlabel in node.find_children("", "RichTextLabel", true, false):
 		rlabel.add_theme_font_override("font", new_font)
+		
+		
+func _on_audio_on_pressed() -> void:
+	_audio_habilitado = true
+	_tocar_audio_sala_atual()
+	_tentar_iniciar_audio()
+	#_update_audio_buttons_ui() 
+
+func _on_audio_off_pressed() -> void:
+	_audio_habilitado = false
+	AudioPlayer.parar_audio()
+	#_update_audio_buttons_ui() 
+
+
+#func _update_audio_buttons_ui() -> void:
+	#if _audio_habilitado:
+		#_audio_on_button.disabled = false
+		#_audio_off_button.disabled = true
+	#else:
+		#_audio_on_button.disabled = false
+		#_audio_off_button.disabled = false

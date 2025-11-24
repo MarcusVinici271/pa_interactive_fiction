@@ -300,44 +300,20 @@ color = Color(0, 0.96862745, 0.65882355, 1)
 edit_alpha = false
 edit_intensity = false
 
-[node name="TrocarFonte" type="HBoxContainer" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer"]
+[node name="Audio" type="HBoxContainer" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer"]
 layout_mode = 2
 
-[node name="RichTextLabel" type="RichTextLabel" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/TrocarFonte"]
+[node name="RichTextLabel" type="RichTextLabel" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/Audio"]
 custom_minimum_size = Vector2(350, 0)
 layout_mode = 2
 theme_override_fonts/normal_font = ExtResource("1_qppyr")
 theme_override_font_sizes/normal_font_size = 30
-text = "Trocar Fonte"
+text = "Audio"
 fit_content = true
 autowrap_mode = 0
 vertical_alignment = 1
 
-[node name="FontSelector" type="OptionButton" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/TrocarFonte"]
-custom_minimum_size = Vector2(200, 0)
-layout_mode = 2
-item_count = 3
-popup/item_0/text = "Sono"
-popup/item_0/id = 0
-popup/item_1/text = "Nunito"
-popup/item_1/id = 1
-popup/item_2/text = "Exo"
-popup/item_2/id = 2
-
-[node name="DesativarAudio" type="HBoxContainer" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer"]
-layout_mode = 2
-
-[node name="RichTextLabel" type="RichTextLabel" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/DesativarAudio"]
-custom_minimum_size = Vector2(350, 0)
-layout_mode = 2
-theme_override_fonts/normal_font = ExtResource("1_qppyr")
-theme_override_font_sizes/normal_font_size = 30
-text = "Desativar Audio"
-fit_content = true
-autowrap_mode = 0
-vertical_alignment = 1
-
-[node name="Aumentar2" type="Button" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/DesativarAudio"]
+[node name="On_audio" type="Button" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/Audio"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_fonts/font = ExtResource("3_4dhvd")
@@ -348,7 +324,7 @@ theme_override_styles/hover = ExtResource("12_55cbs")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_endxa")
 text = "on"
 
-[node name="Aumentar" type="Button" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/DesativarAudio"]
+[node name="Off_audio" type="Button" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/Audio"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_fonts/font = ExtResource("3_4dhvd")
@@ -362,3 +338,5 @@ text = "Off"
 [connection signal="button_down" from="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/TamanhoFonte/Diminuir" to="." method="_on_diminuir_button_down"]
 [connection signal="button_down" from="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/TamanhoFonte/Aumentar" to="." method="_on_aumentar_button_down"]
 [connection signal="picker_created" from="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/CorFonte2/ColorPickerButton" to="." method="_on_color_picker_button_picker_created"]
+[connection signal="pressed" from="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/Audio/On_audio" to="." method="_on_audio_on_pressed"]
+[connection signal="pressed" from="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/Audio/Off_audio" to="." method="_on_audio_off_pressed"]
