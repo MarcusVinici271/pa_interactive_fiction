@@ -4,7 +4,7 @@
 // Incrementing CACHE_VERSION will kick off the install event and force
 // previously cached resources to be updated from the network.
 /** @type {string} */
-const CACHE_VERSION = '1763952276|226950560';
+const CACHE_VERSION = '1764122507|3284630825';
 /** @type {string} */
 const CACHE_PREFIX = 'Cronicas_FI-sw-cache-';
 const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;
