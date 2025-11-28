@@ -283,8 +283,8 @@ extends Resource
 	},
 	"casa_golirin": {
 		"Nome": "Casa Gólirin",
-		"Descricao": "Casa da alquimista Gólirin.",
-		"DescricaoSaidas": "Para voltar digite [b]oeste[/b].",
+		"Descricao": "O chão de madeira está perfeitamente varrido. A luz entra por uma janela limpa a oeste, iluminando o ambiente. Contra a parede norte há uma estante cheia de pergaminhos. Em um canto há uma cama estreita com lençois de linho brancos e bem dobrados. Uma pequena mesa de carvalho polido com duas cadeiras retas fica no centro. Aos pés da cama há um pequeno baú de madeira escura com entalhes élficos.",
+		"DescricaoSaidas": "A única porta, a [b]oeste[/b], leva de volta à Travessa.",
 		"Saidas": { "oeste": "travessa_oeste_29" }
 	},
 	"travessa_oeste_30": {

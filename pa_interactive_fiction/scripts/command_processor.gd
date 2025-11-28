@@ -1,33 +1,51 @@
 extends Node
 
-# MESSAGE = retorna só uma mensagem
-# ROOM = retorna também um objeto room
-# META = um comando que o GameManager deve processar (ex: salvar)
 enum ResultType { MESSAGE, ROOM, META }
 
 @export var room_data: Resource
+
+
 var _salas: Dictionary
+var _salas_resumidas: Dictionary
+var _tutorial_salas: Dictionary
+var _usar_tutorial: bool = false
 
 var _player: Node = null
 
 func _ready() -> void:
-	if room_data and "salas" in room_data:
-		_salas = room_data.salas
-	else:
-		printerr("Erro! 'room_data' não foi atribuído no CommandProcessor ou está corrompido.")
+	if not room_data:
+		printerr("Erro! 'room_data' não foi atribuído no CommandProcessor.")
 		return
 	
+	if "salas" in room_data:
+		_salas = room_data.salas
+	
+	if "salas_resumidas" in room_data:
+		_salas_resumidas = room_data.salas_resumidas
+	
+	if "tutorial_salas" in room_data:
+		_tutorial_salas = room_data.tutorial_salas
+
 	if _salas.is_empty():
-		printerr("Erro! O dicionário de salas está vazio.")
+		printerr("Erro! O dicionário de salas principal está vazio.")
 
 func set_player(player_node: Node) -> void:
 	_player = player_node
 	if not _player:
 		printerr("CommandProcessor: Referência do Player recebida é nula.")
 
+func set_tutorial_mode(is_tutorial: bool) -> void:
+	_usar_tutorial = is_tutorial
+
+func _get_active_dictionary() -> Dictionary:
+	if _usar_tutorial:
+		return _tutorial_salas
+	return _salas
+
 func get_room_data(room_id: String) -> Dictionary:
-	if _salas.has(room_id):
-		return _salas[room_id]
+	var salas_ativas = _get_active_dictionary()
+	if salas_ativas.has(room_id):
+		return salas_ativas[room_id]
 	printerr("Erro: Tentativa de buscar sala inexistente: %s" % room_id)
 	return {}
 
@@ -66,7 +84,7 @@ func process_command(input_text: String) -> Dictionary:
 			return _mover("baixo")
 		"v", "ver", "olhar":
 			return _ver_sala()
-		"l", "limpar", "clear":
+		"limpar", "clear":
 			return _clear()
 		"ajuda":
 			return { "type": ResultType.MESSAGE, "message": _help() }
@@ -78,7 +96,8 @@ func process_command(input_text: String) -> Dictionary:
 			return { "type": ResultType.MESSAGE, "message": "Comando não reconhecido." }
 
 func _ver_sala() -> Dictionary:
-	var sala_atual = _salas[_player.localizacao]
+	var salas_ativas = _get_active_dictionary()
+	var sala_atual = salas_ativas[_player.localizacao]
 	return {
 		"type": ResultType.ROOM,
 		"room": sala_atual,
@@ -86,15 +105,16 @@ func _ver_sala() -> Dictionary:
 	}
 
 func _mover(direcao: String) -> Dictionary:
-	var sala_atual = _salas[_player.localizacao]
+	var salas_ativas = _get_active_dictionary()
+	var sala_atual = salas_ativas[_player.localizacao]
 	var saidas = sala_atual["Saidas"]
 
 	if saidas.has(direcao):
 		var proxima_sala_id = saidas[direcao]
 		
-		_player.localizacao = proxima_sala_id 
+		_player.localizacao = proxima_sala_id
 		
-		var nova_sala = _salas[_player.localizacao]
+		var nova_sala = salas_ativas[_player.localizacao]
 		
 		var mensagem_saida = ""
 		
@@ -126,7 +146,6 @@ func _clear() -> Dictionary:
 			"message": ""
 		}
 
-# MODIFICADO: Adiciona os novos comandos
 func _help() -> String:
 	return """[b]Comandos de movimento:[/b]
 	- [b]norte[/b] (ou [b]n[/b])

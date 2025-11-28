@@ -10,10 +10,10 @@ config_version=5
 
 [application]
 
-config/name="Cronicas_FI"
+config/name="Cronicas da Lagrima Negra"
 run/main_scene="uid://bwwqgodgtxphi"
 config/features=PackedStringArray("4.5", "GL Compatibility")
-config/icon="res://icon.svg"
+config/icon="uid://by3p4xxv7goes"
 
 [autoload]
 

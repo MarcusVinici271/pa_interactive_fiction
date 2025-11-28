@@ -4,22 +4,22 @@ extends Control
 @export var input_node: LineEdit
 @export var history_rows_node: VBoxContainer
 @export var input_response_scene: PackedScene
-
 @export var room_scene: PackedScene
 @export var scroll: ScrollContainer
 @export var max_lines_remembered: int = 10
-
 @export var player: Node
-
-const SAVE_FILE_PATH = "user://savegame.dat"
 
 var _scroll_bar: VScrollBar
 var _max_scroll_length: float = 0.0
 var _interacao_inicial_feita = false
 var _audio_habilitado: bool = false
+var _estado_jogo: String = "menu"
+const SAVE_FILE_PATH = "user://savegame.dat"
+
+# --- [ AUDIO/INTERAÇÃO DE INÍCIO ] ---
+
 func _tentar_iniciar_audio() -> void:
 	if not _interacao_inicial_feita and _audio_habilitado:
-		# O restante da lógica de interação inicial (mouse/teclado)
 		var starting_room = command_processor.get_starting_room_data()
 		if starting_room and starting_room.has("Nome"):
 			AudioPlayer.tocar_audio_da_sala(player.localizacao)
@@ -28,25 +28,22 @@ func _tentar_iniciar_audio() -> void:
 				_interacao_inicial_feita = true
 				
 func _tocar_audio_sala_atual() -> void:
-	# Esta função só checa o flag de preferência do jogador
 	if _audio_habilitado and player.localizacao:
 		var nome_audio = player.localizacao
 		AudioPlayer.tocar_audio_da_sala(nome_audio)
 				
 func _gui_input(event: InputEvent) -> void:
-	# Captura eventos GUI (mouse, toque) dentro do limite do GameManager (Control)
 	if event is InputEventMouseButton:
 		_tentar_iniciar_audio()
-# --- INÍCIO: Adições para Tamanho da Fonte ---
-# Rastreia o tamanho da fonte atual
+		
+# --- [ VARIÁVEIS DE CONFIGURAÇÃO DE UI ] ---
+
 var _current_font_size: int = 30
 const _FONT_SIZE_MIN: int = 16
 const _FONT_SIZE_MAX: int = 48
 const _FONT_SIZE_STEP: int = 2
-# --- INÍCIO: CORES DE FONTE ---
-var _primary_color: Color = Color.WHITE  
+var _primary_color: Color = Color.WHITE
 var _secondary_color: Color = Color("#00f7a8")
-# --- INÍCIO: FONTE ---
 var fonts: Dictionary = {
 	"Fonte Padrao" : preload("res://assets/fonts/fonte_1/Exo_2/Exo2-Italic-VariableFont_wght.ttf"),
 	"Fonte Sono" : preload("res://assets/fonts/fonte_1/Sono/static/Sono-Bold.ttf"),
@@ -54,13 +51,37 @@ var fonts: Dictionary = {
 }
 var _selected_font: Font = fonts["Fonte Padrao"]
 
-# Referências para os labels que precisam ser atualizados
+# --- [ REFERÊNCIAS ONREADY ] ---
+
 @onready var _caret_label: Label = $Interface/MarginContainer/HBoxContainer/Rows/HBoxContainer/InputArea/HBoxContainer/Caret
 @onready var _config_title_label: RichTextLabel = $Interface/MarginContainer/HBoxContainer/VBoxContainer/Config/MarginContainer2/VBoxContainer/PanelContainer/RichTextLabel
 @onready var _config_font_label: RichTextLabel = $Interface/MarginContainer/HBoxContainer/VBoxContainer/Config/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/HBoxContainer/RichTextLabel
-# --- FIM: Adições para Tamanho da Fonte ---
 @onready var _audio_on_button: Button = $Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/Audio/On_audio
 @onready var _audio_off_button: Button = $Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/Audio/Off_audio
+@onready var cpb2: ColorPickerButton = $Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/CorFonte2/ColorPickerButton
+@onready var cpb1: ColorPickerButton = $Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/CorFonte/ColorPickerButton
+@onready var color_buttons: =[cpb1, cpb2]
+@onready var font_selector: OptionButton = $Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/TrocarFonte/FontSelector
+
+# --- [ FUNÇÕES BÁSICAS DE CICLO DE VIDA ] ---
+
+func _exibir_menu_principal() -> void:
+	
+	var menu_text = """
+[b]CRÔNICAS DA LÁGRIMA NEGRA[/b]
+
+Por favor, digite uma opção para começar:
+
+- [b]TUTORIAL[/b] (Aprender a jogar)
+- [b]JOGAR[/b] (Começar a aventura principal)
+- [b]CARREGAR[/b] (Continuar jogo salvo)
+"""
+	
+	var menu_instance = input_response_scene.instantiate()
+	menu_instance.set_text("", menu_text)
+	_add_response_to_game(menu_instance)
+
+
 func _ready() -> void:
 	if input_node:
 		input_node.text_submitted.connect(_on_input_submitted)
@@ -82,94 +103,160 @@ func _ready() -> void:
 	if player and command_processor:
 		command_processor.set_player(player)
 	else:
-		printerr("Falha ao injetar Player no CommandProcessor.
-O jogo não pode começar.")
+		printerr("Falha ao injetar Player no CommandProcessor. O jogo não pode começar.")
 		return
 
-	_start_game()
+	_exibir_menu_principal()
 	
-	# --- INÍCIO: Adição para Tamanho da Fonte ---
-	# Define o tamanho da fonte inicial para todos os elementos
 	_update_all_font_sizes()
-	# --- FIM: Adição para Tamanho da Fonte ---
-	# --- INÍCIO: Troca de Cores dos textos ---
 	_color_change()
-	# --- FIM: Troca de Cores dos textos ---
-	# --- INÍCIO: Troca de Fontes dos textos ---
 	_update_all_fonts(_selected_font)
-	# --- FIM: Troca de Cores dos textos ---
-	# --- INÍCIO: Audio on e off ---
+
 	if _audio_on_button and _audio_off_button:
 		_audio_on_button.pressed.connect(_on_audio_on_pressed)
 		_audio_off_button.pressed.connect(_on_audio_off_pressed)
-#_update_audio_buttons_ui()
-# --- FIM: Audio on e off ---
+		
 func _start_game() -> void:
+	_clear_history()
 	if command_processor and room_scene:
 		var starting_room = command_processor.get_starting_room_data()
 		if not starting_room.is_empty():
 			_add_room_node_to_game(starting_room)
-			#if player.localizacao:
-				#var nome_audio = player.localizacao
-				#AudioPlayer.tocar_audio_da_sala(nome_audio)
 		else:
 			printerr("Erro: Não foi possível obter a sala inicial.")
 	else:
 		printerr("Erro ao iniciar o jogo: CommandProcessor ou RoomScene não estão definidos.")
 
+# --- [ LÓGICA DE TUTORIAL E ESTADO ] ---
+
+func _iniciar_tutorial():
+	_clear_history()
+	_estado_jogo = "tutorial"
+	
+	command_processor.set_tutorial_mode(true) 
+	
+	var sala_inicial = "tutorial_inicio"
+	
+	player.localizacao = sala_inicial
+	
+	var starting_room_data = command_processor.get_room_data(sala_inicial) 
+	
+	if not starting_room_data.is_empty():
+		_add_room_node_to_game(starting_room_data)
+		_tocar_audio_sala_atual()
+	else:
+		printerr("Erro: Não foi possível carregar a sala inicial do tutorial.")
+		
+func _finalizar_tutorial() -> void:
+	_clear_history()
+	
+	_estado_jogo = "principal"
+	
+	_start_game()
+
+# --- [ PROCESSAMENTO DE INPUT E COMANDOS ] ---
+
 func _on_input_submitted(new_text: String) -> void:
-	# --- 1. VERIFICAÇÕES DE PRÉ-REQUISITOS E INPUT ---
 	if not input_response_scene or not history_rows_node or not input_node or not command_processor or not player:
-		printerr("Erro: verifique se todos os nós (Input, History, Scene, CommandProcessor, Player) estão atribuídos.")
+		printerr("Erro: nós não atribuídos.")
 		return
 
 	if new_text.is_empty():
 		return
 
-	var result = command_processor.process_command(new_text)
+	var comando_limpo = new_text.to_lower().strip_edges()
+	var response_instance: Control
+	var load_success: bool
+	var new_room_data: Dictionary
+
+	# --- [ ESTADO: TUTORIAL (Comando 'tutorial') ] ---
+	if _estado_jogo == "tutorial":
+		if comando_limpo == "tutorial":
+			_finalizar_tutorial()
+			input_node.text = ""
+			return
+
+	# --- [ ESTADO: MENU (Comandos de MODO) ] ---
+	if _estado_jogo == "menu":
+		match comando_limpo:
+			"tutorial":
+				_iniciar_tutorial()
+				input_node.text = ""
+				return
+
+			"jogar":
+				_estado_jogo = "principal"
+				_start_game()
+				input_node.text = ""
+				return
+
+			"carregar":
+				load_success = _load_game()
+				response_instance = input_response_scene.instantiate()
+
+				if load_success:
+					_clear_history() # Limpa o menu da tela
+					_estado_jogo = "principal"
+					response_instance.set_text(new_text, "Jogo carregado com sucesso. Bem-vindo de volta!")
+					_add_response_to_game(response_instance)
+
+					new_room_data = command_processor.get_room_data(player.localizacao)
+					_add_room_node_to_game(new_room_data)
+					_tocar_audio_sala_atual()
+				else:
+					response_instance.set_text(new_text, "Falha ao carregar: nenhum jogo salvo encontrado.")
+					_add_response_to_game(response_instance)
+				
+				input_node.text = ""
+				return
+
+			_:
+				response_instance = input_response_scene.instantiate()
+				response_instance.set_text(new_text, "Comando inválido. Digite 'tutorial', 'jogar' ou 'carregar'.")
+				_add_response_to_game(response_instance)
+				input_node.text = ""
+				return
+
+	# --- [ ESTADO: PRINCIPAL / TUTORIAL (Comandos do Jogo) ] ---
+	
+	var result = command_processor.process_command(comando_limpo)
 	
 	if result.type == command_processor.ResultType.META and result.command == "clear":
 		_clear_history()
 		input_node.text = ""
 		return
 
-	var input_response_instance = input_response_scene.instantiate()
-	_add_response_to_game(input_response_instance)
+	response_instance = input_response_scene.instantiate()
+	_add_response_to_game(response_instance)
 
-	# --- 2. PROCESSAMENTO DE COMANDO ---
-	
 	match result.type:
 		command_processor.ResultType.ROOM:
-			# Comando de movimento: atualiza a sala e toca o áudio
-			input_response_instance.set_text(new_text, result.message)
+			response_instance.set_text(new_text, result.message)
 			_add_room_node_to_game(result.room)
 			_tocar_audio_sala_atual()
 			
 		command_processor.ResultType.MESSAGE:
-			# Comando que retorna apenas uma mensagem (ex: olhar)
-			input_response_instance.set_text(new_text, result.message)
+			response_instance.set_text(new_text, result.message)
 			
 		command_processor.ResultType.META:
 			if result.command == "save":
 				_save_game()
-				input_response_instance.set_text(new_text, result.message)
+				response_instance.set_text(new_text, result.message)
 				
 			elif result.command == "load":
-				var load_success = _load_game()
+				load_success = _load_game()
 				
 				if load_success:
-					input_response_instance.set_text(new_text, result.message)
-					
-					# Recarrega a sala após o load
-					var new_room_data = command_processor.get_room_data(player.localizacao)
+					response_instance.set_text(new_text, result.message)
+					new_room_data = command_processor.get_room_data(player.localizacao)
 					_add_room_node_to_game(new_room_data)
-					
-					
 					_tocar_audio_sala_atual()
 				else:
-					input_response_instance.set_text(new_text, "Falha ao carregar: nenhum jogo salvo encontrado.")
+					response_instance.set_text(new_text, "Falha ao carregar: nenhum jogo salvo encontrado.")
 
 	input_node.text = ""
+
+# --- [ LÓGICA DE SALVAR/CARREGAR ] ---
 
 func _save_game() -> void:
 	if not player:
@@ -218,6 +305,8 @@ func _load_game() -> bool:
 	
 	return true
 
+# --- [ MANIPULAÇÃO DE TELA E HISTÓRICO ] ---
+
 func _add_room_node_to_game(data) -> void:
 	if not room_scene: return
 
@@ -225,23 +314,18 @@ func _add_room_node_to_game(data) -> void:
 
 	var objects_text = "Não há objetos nesta sala."
 	room_node.set_text(
-		data.Nome, 
-		data.Descricao, 
+		data.Nome,
+		data.Descricao,
 
-		data.DescricaoSaidas, 
+		data.DescricaoSaidas,
 		objects_text
 	)
 
 	_add_response_to_game(room_node)
 
 func _add_response_to_game(response: Control) -> void:
-	# --- INÍCIO: Adição para Tamanho da Fonte ---
-	# Aplica o tamanho da fonte atual ao novo nó ANTES de adicioná-lo
 	_apply_font_size_to_node(response, _current_font_size)
-	# --- FIM: Adição para Tamanho da Fonte ---
-	# --- INÍCIO: Adição para Cor da Fonte ---
 	_apply_color_to_node(response)
-	# --- FIM: Adição para Cor da Fonte ---
 	history_rows_node.add_child(response)
 	_delete_input_beyond_limit()
 
@@ -260,55 +344,41 @@ func _handle_scrollbar_changed() -> void:
 		_max_scroll_length = _scroll_bar.max_value
 		scroll.scroll_vertical = int(_max_scroll_length)
 
-# --- INÍCIO: Implementação dos Botões de Fonte ---
+# --- [ FUNÇÕES DE CUSTOMIZAÇÃO: FONTE/COR ] ---
 
-# Função auxiliar para aplicar o tamanho da fonte recursivamente
-# aos nós RichTextLabel e Label dentro de um nó de cena (Room ou InputResponse)
 func _apply_font_size_to_node(node: Control, size: int) -> void:
-	# Encontra todos os RichTextLabels na cena filha
 	var rich_text_labels = node.find_children("", "RichTextLabel", true, false)
 	for label in rich_text_labels:
 		label.set("theme_override_font_sizes/normal_font_size", size)
 		label.set("theme_override_font_sizes/bold_font_size", size)
 	
-	# Encontra todos os Labels simples na cena filha
 	var simple_labels = node.find_children("", "Label", true, false)
 	for label in simple_labels:
 		label.set("theme_override_font_sizes/font_size", size)
 
-# Função auxiliar para atualizar TODOS os elementos de texto na tela
 func _update_all_font_sizes() -> void:
-	# 1. Atualiza o campo de input e o caret
 	if input_node:
 		input_node.set("theme_override_font_sizes/font_size", _current_font_size)
 	if _caret_label:
 		_caret_label.set("theme_override_font_sizes/font_size", _current_font_size)
 	
-	# 2. Atualiza os labels no painel de Configurações
 	if _config_title_label:
 		_config_title_label.set("theme_override_font_sizes/normal_font_size", _current_font_size)
 	if _config_font_label:
 		_config_font_label.set("theme_override_font_sizes/normal_font_size", _current_font_size)
 	
-	# 3. Atualiza todos os nós de histórico existentes
 	if history_rows_node:
 		for child in history_rows_node.get_children():
 			_apply_font_size_to_node(child, _current_font_size)
 
 func _on_diminuir_button_down() -> void:
-	# Diminui o tamanho da fonte, respeitando o limite mínimo
 	_current_font_size = max(_FONT_SIZE_MIN, _current_font_size - _FONT_SIZE_STEP)
 	_update_all_font_sizes()
 
 func _on_aumentar_button_down() -> void:
-	# Aumenta o tamanho da fonte, respeitando o limite máximo
 	_current_font_size = min(_FONT_SIZE_MAX, _current_font_size + _FONT_SIZE_STEP)
 	_update_all_font_sizes()
-# --- FIM: Implementação dos Botões de Fonte ---
 
-@onready var cpb2: ColorPickerButton = $Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/CorFonte2/ColorPickerButton
-@onready var cpb1: ColorPickerButton = $Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/CorFonte/ColorPickerButton
-@onready var color_buttons: =[cpb1, cpb2]
 func _color_change():
 	call_deferred("iniciar_conexoes")
 func iniciar_conexoes():
@@ -326,7 +396,7 @@ func _on_picker_created(button: ColorPickerButton):
 		picker.presets_visible = false
 		picker.sampler_visible = false
 		picker.hex_visible = false
-		picker.edit_alpha = false 
+		picker.edit_alpha = false
 		picker.edit_intensity = false
 
 func _on_color_selected(color: Color, button: ColorPickerButton):
@@ -338,27 +408,23 @@ func _on_color_selected(color: Color, button: ColorPickerButton):
 	_update_all_text_colors()
 	
 func _update_all_text_colors():
-	# 1. Input e caret
 	if input_node:
 		input_node.set("theme_override_colors/font_color", _primary_color)
 
 	if _caret_label:
 		_caret_label.set("theme_override_colors/font_color", _primary_color)
 
-	# 2. Textos da Config
 	if _config_title_label:
 		_config_title_label.set("theme_override_colors/default_color", _primary_color)
 	if _config_font_label:
 		_config_font_label.set("theme_override_colors/default_color", _primary_color)
 
-	# 3. Atualizar textos já existentes no histórico
 	if history_rows_node:
 		for child in history_rows_node.get_children():
 			_apply_color_to_node(child)
 func _apply_color_to_node(node: Control):
 	var rich_text_labels = node.find_children("", "RichTextLabel", true, false)
 	for label in rich_text_labels:
-		# Se o label for Nome ou Saidas, aplica a cor secundária
 		if label.name in ["Name", "Exits"]:
 			label.set("theme_override_colors/default_color", _secondary_color)
 			label.set("theme_override_colors/font_color", _secondary_color)
@@ -368,45 +434,35 @@ func _apply_color_to_node(node: Control):
 		
 	var labels = node.find_children("", "Label", true, false)
 	for label in labels:
-		# Mesma lógica para Labels simples
 		if label.name in ["NameLabel", "Exits"]:
 			label.set("theme_override_colors/font_color", _secondary_color)
 		else:
 			label.set("theme_override_colors/font_color", _primary_color)
 		
-@onready var font_selector: OptionButton = $Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/TrocarFonte/FontSelector
-
 func _fontes():
-	# Popula o OptionButton
 	for nome in fonts.keys():
 		font_selector.add_item(nome)
 
-	# Conecta sinal
 	font_selector.item_selected.connect(_on_font_selected)
 	
 func _on_font_selected(index: int) -> void:
 	var selected_name = font_selector.get_item_text(index)
-	var _selected_font  = fonts[selected_name]
+	var _selected_font = fonts[selected_name]
 	
-	# Atualiza todas as labels
 	_update_all_fonts(_selected_font)
 	
 func _update_all_fonts(new_font_file: FontFile) -> void:
-	# Input (LineEdit)
 	if input_node:
 		input_node.add_theme_font_override("font", new_font_file)
 
-	# Caret (Label ou RichTextLabel)
 	if _caret_label:
 		_caret_label.add_theme_font_override("font", new_font_file)
 
-	# Textos da Config (RichTextLabel)
 	if _config_title_label:
 		_config_title_label.add_theme_font_override("font", new_font_file)
 	if _config_font_label:
 		_config_font_label.add_theme_font_override("font", new_font_file)
 
-	# Histórico de mensagens
 	if history_rows_node:
 		for child in history_rows_node.get_children():
 			_apply_font_to_node(child, new_font_file)
@@ -419,23 +475,15 @@ func _apply_font_to_node(node: Control, new_font: FontFile) -> void:
 	for rlabel in node.find_children("", "RichTextLabel", true, false):
 		rlabel.add_theme_font_override("font", new_font)
 		
-		
+# --- [ FUNÇÕES DE ÁUDIO ON/OFF ] ---
+
 func _on_audio_on_pressed() -> void:
 	_audio_habilitado = true
 	_tocar_audio_sala_atual()
 	_tentar_iniciar_audio()
-	#_update_audio_buttons_ui() 
+	#_update_audio_buttons_ui() 
 
 func _on_audio_off_pressed() -> void:
 	_audio_habilitado = false
 	AudioPlayer.parar_audio()
-	#_update_audio_buttons_ui() 
-
-
-#func _update_audio_buttons_ui() -> void:
-	#if _audio_habilitado:
-		#_audio_on_button.disabled = false
-		#_audio_off_button.disabled = true
-	#else:
-		#_audio_on_button.disabled = false
-		#_audio_off_button.disabled = false
+	#_update_audio_buttons_ui()

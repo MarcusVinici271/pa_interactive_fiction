@@ -1,1 +1,9 @@
 res://scenes/GameManager.tscn
+res://room.resume.gd
+res://data/room_database.gd
+res://scripts/game_manager.gd
+res://tutorial.gd
+res://tutorial_database.gd
+res://scenes/Room.tscn
+res://scripts/command_processor.gd
+res://scripts/room.resume.gd
