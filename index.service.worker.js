@@ -4,7 +4,7 @@
 // Incrementing CACHE_VERSION will kick off the install event and force
 // previously cached resources to be updated from the network.
 /** @type {string} */
-const CACHE_VERSION = '1764379246|38820059';
+const CACHE_VERSION = '1764547775|23422397';
 /** @type {string} */
 const CACHE_PREFIX = 'Cronicas da Lagr-sw-cache-';
 const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;
