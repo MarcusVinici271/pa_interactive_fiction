@@ -1,0 +1,6 @@
+[gd_resource type="Resource" load_steps=2 format=3 uid="uid://bx3a46nvddkpm"]
+
+[ext_resource type="Script" uid="uid://dam2mo6rtx0ok" path="res://data/tutorial_database.gd" id="1_iuabg"]
+
+[resource]
+script = ExtResource("1_iuabg")

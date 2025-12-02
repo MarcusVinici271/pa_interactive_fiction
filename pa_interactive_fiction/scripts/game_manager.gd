@@ -68,7 +68,7 @@ var _selected_font: Font = fonts["Fonte Padrao"]
 func _exibir_menu_principal() -> void:
 	
 	var menu_text = """
-[b]CRÔNICAS DA LÁGRIMA NEGRA[/b]
+[font_size=40][color=#00f7a8][b]CRÔNICAS DA LÁGRIMA NEGRA[/b][/color][/font_size]
 
 Por favor, digite uma opção para começar:
 
@@ -118,15 +118,29 @@ func _ready() -> void:
 		
 func _start_game() -> void:
 	_clear_history()
+	
+	# --- PASSO CRÍTICO: Redefinir a Localização para o Jogo Principal ---
+	if player:
+		# SUBSTITUA 'ID_DA_PRIMEIRA_SALA_PRINCIPAL' pelo ID correto (e.g., 'sala_entrada', 'caverna_inicio', etc.)
+		player.localizacao = "inicio"
+		command_processor.set_tutorial_mode(false) # Garante que o modo tutorial está DESLIGADO.
+	else:
+		printerr("Erro: Player não está atribuído ou é nulo ao iniciar o jogo.")
+		return # Interrompe a função se não houver player.
+		
+	# --------------------------------------------------------------------
+		
 	if command_processor and room_scene:
 		var starting_room = command_processor.get_starting_room_data()
+		
 		if not starting_room.is_empty():
 			_add_room_node_to_game(starting_room)
 		else:
-			printerr("Erro: Não foi possível obter a sala inicial.")
+			printerr("Erro: Não foi possível obter a sala inicial. Verifique se o ID 'ID_DA_PRIMEIRA_SALA_PRINCIPAL' existe no banco de dados principal.")
 	else:
 		printerr("Erro ao iniciar o jogo: CommandProcessor ou RoomScene não estão definidos.")
-
+		
+		
 # --- [ LÓGICA DE TUTORIAL E ESTADO ] ---
 
 func _iniciar_tutorial():
@@ -169,14 +183,30 @@ func _on_input_submitted(new_text: String) -> void:
 	var load_success: bool
 	var new_room_data: Dictionary
 
-	# --- [ ESTADO: TUTORIAL (Comando 'tutorial') ] ---
+	# --- [ ESTADO: TUTORIAL (Comandos de Transição de MODO) ] ---
+	# Estes comandos devem ser interceptados APENAS no estado "tutorial".
 	if _estado_jogo == "tutorial":
-		if comando_limpo == "tutorial":
-			_finalizar_tutorial()
-			input_node.text = ""
-			return
+		match comando_limpo:
+			# Finaliza o tutorial e começa o jogo principal:
+			"tutorial", "inicio":
+				_finalizar_tutorial()
+				input_node.text = ""
+				return
+
+			# Volta para o menu principal:
+			"menu":
+				_estado_jogo = "menu"
+				command_processor.set_tutorial_mode(false)
+				_clear_history()
+				_exibir_menu_principal()
+				input_node.text = ""
+				return
+				
+			_:
+				pass 
 
 	# --- [ ESTADO: MENU (Comandos de MODO) ] ---
+	# Estes comandos devem ser interceptados APENAS no estado "menu".
 	if _estado_jogo == "menu":
 		match comando_limpo:
 			"tutorial":
@@ -189,13 +219,13 @@ func _on_input_submitted(new_text: String) -> void:
 				_start_game()
 				input_node.text = ""
 				return
-
+				
 			"carregar":
 				load_success = _load_game()
 				response_instance = input_response_scene.instantiate()
-
+				
 				if load_success:
-					_clear_history() # Limpa o menu da tela
+					_clear_history() 
 					_estado_jogo = "principal"
 					response_instance.set_text(new_text, "Jogo carregado com sucesso. Bem-vindo de volta!")
 					_add_response_to_game(response_instance)
@@ -210,6 +240,7 @@ func _on_input_submitted(new_text: String) -> void:
 				input_node.text = ""
 				return
 
+			# Outros comandos são inválidos no menu
 			_:
 				response_instance = input_response_scene.instantiate()
 				response_instance.set_text(new_text, "Comando inválido. Digite 'tutorial', 'jogar' ou 'carregar'.")
@@ -253,6 +284,17 @@ func _on_input_submitted(new_text: String) -> void:
 					_tocar_audio_sala_atual()
 				else:
 					response_instance.set_text(new_text, "Falha ao carregar: nenhum jogo salvo encontrado.")
+
+			elif result.command == "menu": # NOVO! Trata o comando MENU vindo do CommandProcessor
+				_estado_jogo = "menu"
+				command_processor.set_tutorial_mode(false)
+				_clear_history()
+				_exibir_menu_principal()
+				response_instance.set_text(new_text, result.message)
+				
+			else:
+				# Trata outros comandos META não mapeados, se houver.
+				response_instance.set_text(new_text, result.message)
 
 	input_node.text = ""
 

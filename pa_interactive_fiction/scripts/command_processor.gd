@@ -3,7 +3,8 @@ extends Node
 enum ResultType { MESSAGE, ROOM, META }
 
 @export var room_data: Resource
-
+@export var tutorial_rooms: Resource
+@export var room_resume_data : Resource
 
 var _salas: Dictionary
 var _salas_resumidas: Dictionary
@@ -20,11 +21,11 @@ func _ready() -> void:
 	if "salas" in room_data:
 		_salas = room_data.salas
 	
-	if "salas_resumidas" in room_data:
-		_salas_resumidas = room_data.salas_resumidas
+	if "salas_resumidas" in room_resume_data:
+		_salas_resumidas = room_resume_data.salas_resumidas
 	
-	if "tutorial_salas" in room_data:
-		_tutorial_salas = room_data.tutorial_salas
+	if "tutorial_salas" in tutorial_rooms:
+		_tutorial_salas = tutorial_rooms.tutorial_salas
 
 	if _salas.is_empty():
 		printerr("Erro! O dicionário de salas principal está vazio.")
@@ -92,6 +93,8 @@ func process_command(input_text: String) -> Dictionary:
 			return { "type": ResultType.META, "command": "save", "message": "Jogo salvo." }
 		"carregar":
 			return { "type": ResultType.META, "command": "load", "message": "Jogo carregado." }
+		"menu": # NOVO: Retorna um comando META para que o GameManager o intercepte
+			return { "type": ResultType.META, "command": "menu", "message": "Retornando ao menu principal." }
 		_:
 			return { "type": ResultType.MESSAGE, "message": "Comando não reconhecido." }
 
@@ -155,6 +158,7 @@ func _help() -> String:
 	- [b]cima[/b] (ou [b]c[/b], [b]subir[/b])
 	- [b]baixo[/b] (ou [b]b[/b], [b]descer[/b])
 [b]Outros comandos:[/b]
+	- [b]menu[/b] voltar para o menu principal
 	- [b]ver[/b] ([b]v[/b] ou [b]olhar[/b])
 	- [b]ajuda[/b]
 	- [b]salvar[/b]

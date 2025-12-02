@@ -1,1 +1,7 @@
+res://scenes/Room.tscn
+res://scripts/command_processor.gd
 res://scenes/GameManager.tscn
+res://data/all_rooms.tres
+res://data/tutorial_rooms.tres
+res://data/resume_rooms.tres
+res://scripts/game_manager.gd
