@@ -1,6 +1,8 @@
 # AudioPlayerManager.gd
 extends AudioStreamPlayer
 
+
+@export var musica_menu: AudioStream = preload("res://assets/audio/menu_audio.ogg")
 # Dicionário que mapeia nomes de sala (strings) para arquivos de áudio (.ogg, .wav)
 # Você precisará preencher isso no Inspetor ou no _ready.
 @export var audio_por_sala: Dictionary = {
@@ -35,6 +37,12 @@ extends AudioStreamPlayer
 	"travessa_oeste_30": preload("res://assets/audio/travessa_oeste_30.ogg"),
 	"casa_golirin": preload("res://assets/audio/casa_golirin.ogg"),
 	
+	#TUTORIAL
+	"tutorial_inicio": preload("res://assets/audio/tutorial_1.ogg"),
+	"tutorial_movimento": preload("res://assets/audio/tutorial_2.ogg"),
+	"tutorial_ajuda": preload("res://assets/audio/tutorial_3.ogg"),
+	"tutorial_final": preload("res://assets/audio/tutorial_final.ogg"),
+	
 }
 
 # ----------------------------------------------------
@@ -63,3 +71,14 @@ func tocar_audio_da_sala(nome_da_sala: String):
 func parar_audio():
 	if playing:
 		stop()
+
+func tocar_musica_menu():
+	if stream == musica_menu and playing:
+		return # Já está tocando
+
+	if musica_menu:
+		parar_audio()
+		stream = musica_menu
+		play()
+	else:
+		print("—> ERRO: AudioStream para o menu não está configurado.")

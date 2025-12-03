@@ -20,12 +20,14 @@ const SAVE_FILE_PATH = "user://savegame.dat"
 
 func _tentar_iniciar_audio() -> void:
 	if not _interacao_inicial_feita and _audio_habilitado:
-		var starting_room = command_processor.get_starting_room_data()
-		if starting_room and starting_room.has("Nome"):
-			AudioPlayer.tocar_audio_da_sala(player.localizacao)
+		
+		if _estado_jogo == "menu":
+			AudioPlayer.tocar_musica_menu()
+		elif player.localizacao:
+			_tocar_audio_sala_atual()
 
-			if AudioPlayer.playing:
-				_interacao_inicial_feita = true
+		if AudioPlayer.playing:
+			_interacao_inicial_feita = true
 				
 func _tocar_audio_sala_atual() -> void:
 	if _audio_habilitado and player.localizacao:
@@ -121,7 +123,6 @@ func _start_game() -> void:
 	
 	# --- PASSO CRÍTICO: Redefinir a Localização para o Jogo Principal ---
 	if player:
-		# SUBSTITUA 'ID_DA_PRIMEIRA_SALA_PRINCIPAL' pelo ID correto (e.g., 'sala_entrada', 'caverna_inicio', etc.)
 		player.localizacao = "inicio"
 		command_processor.set_tutorial_mode(false) # Garante que o modo tutorial está DESLIGADO.
 	else:
@@ -131,15 +132,15 @@ func _start_game() -> void:
 	# --------------------------------------------------------------------
 		
 	if command_processor and room_scene:
-		var starting_room = command_processor.get_starting_room_data()
+		var starting_room = command_processor.get_room_description_by_status(player.localizacao)
 		
 		if not starting_room.is_empty():
 			_add_room_node_to_game(starting_room)
+			_tocar_audio_sala_atual()
 		else:
-			printerr("Erro: Não foi possível obter a sala inicial. Verifique se o ID 'ID_DA_PRIMEIRA_SALA_PRINCIPAL' existe no banco de dados principal.")
+			printerr("Erro: Não foi possível obter a sala inicial.") 
 	else:
 		printerr("Erro ao iniciar o jogo: CommandProcessor ou RoomScene não estão definidos.")
-		
 		
 # --- [ LÓGICA DE TUTORIAL E ESTADO ] ---
 
@@ -153,7 +154,7 @@ func _iniciar_tutorial():
 	
 	player.localizacao = sala_inicial
 	
-	var starting_room_data = command_processor.get_room_data(sala_inicial) 
+	var starting_room_data = command_processor.get_room_description_by_status(sala_inicial)
 	
 	if not starting_room_data.is_empty():
 		_add_room_node_to_game(starting_room_data)
@@ -171,6 +172,7 @@ func _finalizar_tutorial() -> void:
 # --- [ PROCESSAMENTO DE INPUT E COMANDOS ] ---
 
 func _on_input_submitted(new_text: String) -> void:
+	# 1. Checagens Iniciais
 	if not input_response_scene or not history_rows_node or not input_node or not command_processor or not player:
 		printerr("Erro: nós não atribuídos.")
 		return
@@ -181,32 +183,29 @@ func _on_input_submitted(new_text: String) -> void:
 	var comando_limpo = new_text.to_lower().strip_edges()
 	var response_instance: Control
 	var load_success: bool
-	var new_room_data: Dictionary
+	var room_data_to_display: Dictionary # Variável chave que armazenará o dado da sala (resumo/completo)
 
 	# --- [ ESTADO: TUTORIAL (Comandos de Transição de MODO) ] ---
-	# Estes comandos devem ser interceptados APENAS no estado "tutorial".
 	if _estado_jogo == "tutorial":
 		match comando_limpo:
-			# Finaliza o tutorial e começa o jogo principal:
 			"tutorial", "inicio":
 				_finalizar_tutorial()
 				input_node.text = ""
 				return
 
-			# Volta para o menu principal:
 			"menu":
 				_estado_jogo = "menu"
 				command_processor.set_tutorial_mode(false)
 				_clear_history()
+				AudioPlayer.tocar_musica_menu()
 				_exibir_menu_principal()
 				input_node.text = ""
 				return
 				
 			_:
-				pass 
-
+				pass
+				
 	# --- [ ESTADO: MENU (Comandos de MODO) ] ---
-	# Estes comandos devem ser interceptados APENAS no estado "menu".
 	if _estado_jogo == "menu":
 		match comando_limpo:
 			"tutorial":
@@ -225,13 +224,14 @@ func _on_input_submitted(new_text: String) -> void:
 				response_instance = input_response_scene.instantiate()
 				
 				if load_success:
-					_clear_history() 
+					_clear_history()
 					_estado_jogo = "principal"
 					response_instance.set_text(new_text, "Jogo carregado com sucesso. Bem-vindo de volta!")
 					_add_response_to_game(response_instance)
 
-					new_room_data = command_processor.get_room_data(player.localizacao)
-					_add_room_node_to_game(new_room_data)
+					# ✅ Busca a descrição por status (resumo/completo) para o player.localizacao carregada.
+					room_data_to_display = command_processor.get_room_description_by_status(player.localizacao)
+					_add_room_node_to_game(room_data_to_display)
 					_tocar_audio_sala_atual()
 				else:
 					response_instance.set_text(new_text, "Falha ao carregar: nenhum jogo salvo encontrado.")
@@ -263,7 +263,17 @@ func _on_input_submitted(new_text: String) -> void:
 	match result.type:
 		command_processor.ResultType.ROOM:
 			response_instance.set_text(new_text, result.message)
-			_add_room_node_to_game(result.room)
+			
+			if result.has("room"):
+				# Caso 1: Comando 'ver' ou 'desc'. CommandProcessor envia o dado COMPLETO.
+				room_data_to_display = result.room
+			
+			elif result.has("room_id"):
+				# Caso 2: Comando 'mover'. CommandProcessor envia apenas o ID.
+				# Busca a descrição por status (resumo/completo) para o novo ID.
+				room_data_to_display = command_processor.get_room_description_by_status(result.room_id)
+				
+			_add_room_node_to_game(room_data_to_display)
 			_tocar_audio_sala_atual()
 			
 		command_processor.ResultType.MESSAGE:
@@ -279,13 +289,15 @@ func _on_input_submitted(new_text: String) -> void:
 				
 				if load_success:
 					response_instance.set_text(new_text, result.message)
-					new_room_data = command_processor.get_room_data(player.localizacao)
-					_add_room_node_to_game(new_room_data)
+					
+					# Busca os dados da sala carregada com a lógica de status.
+					room_data_to_display = command_processor.get_room_description_by_status(player.localizacao)
+					_add_room_node_to_game(room_data_to_display)
 					_tocar_audio_sala_atual()
 				else:
 					response_instance.set_text(new_text, "Falha ao carregar: nenhum jogo salvo encontrado.")
 
-			elif result.command == "menu": # NOVO! Trata o comando MENU vindo do CommandProcessor
+			elif result.command == "menu":
 				_estado_jogo = "menu"
 				command_processor.set_tutorial_mode(false)
 				_clear_history()
@@ -311,7 +323,8 @@ func _save_game() -> void:
 		"sexo": player.sexo,
 		"idade": player.idade,
 		"descricao": player.descricao,
-		"localizacao": player.localizacao
+		"localizacao": player.localizacao,
+		"salas_visitadas": player.salas_visitadas
 	}
 
 	var file = FileAccess.open(SAVE_FILE_PATH, FileAccess.WRITE)
@@ -344,6 +357,9 @@ func _load_game() -> bool:
 	player.idade = save_data.idade
 	player.descricao = save_data.descricao
 	player.localizacao = save_data.localizacao
+	
+	if save_data.has("salas_visitadas"):
+		player.salas_visitadas = save_data.salas_visitadas
 	
 	return true
 
@@ -521,8 +537,11 @@ func _apply_font_to_node(node: Control, new_font: FontFile) -> void:
 
 func _on_audio_on_pressed() -> void:
 	_audio_habilitado = true
-	_tocar_audio_sala_atual()
-	_tentar_iniciar_audio()
+	if _estado_jogo == "menu":
+		AudioPlayer.tocar_musica_menu() # Toca a música do menu, se o estado for 'menu'.
+	elif _estado_jogo == "tutorial" or _estado_jogo == "principal":
+		_tocar_audio_sala_atual()
+	
 	#_update_audio_buttons_ui() 
 
 func _on_audio_off_pressed() -> void:

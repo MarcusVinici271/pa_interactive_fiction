@@ -15,13 +15,7 @@ var descricao: String = "Uma descrição genérica e breve."
 
 
 var localizacao: String = "inicio"
+var salas_visitadas: Array = []
 
 func _ready():
 	pass
-
-# Você pode adicionar outras funções aqui, por exemplo:
-# func set_nome(novo_nome):
-# 	nome = novo_nome
-#
-# func mover(nova_localizacao):
-# 	localizacao = nova_localizacao

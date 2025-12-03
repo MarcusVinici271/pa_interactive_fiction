@@ -21,10 +21,12 @@ func _ready() -> void:
 	if "salas" in room_data:
 		_salas = room_data.salas
 	
-	if "salas_resumidas" in room_resume_data:
+	if room_resume_data and "salas_resumidas" in room_resume_data:
 		_salas_resumidas = room_resume_data.salas_resumidas
+		print("DEBUG: Salas resumidas carregadas. Total de salas: ", _salas_resumidas.size())
+		print("DEBUG: Conteúdo resumido do ID 'inicio': ", _salas_resumidas.get("inicio", {}))
 	
-	if "tutorial_salas" in tutorial_rooms:
+	if tutorial_rooms and "tutorial_salas" in tutorial_rooms:
 		_tutorial_salas = tutorial_rooms.tutorial_salas
 
 	if _salas.is_empty():
@@ -43,19 +45,50 @@ func _get_active_dictionary() -> Dictionary:
 		return _tutorial_salas
 	return _salas
 
-func get_room_data(room_id: String) -> Dictionary:
-	var salas_ativas = _get_active_dictionary()
-	if salas_ativas.has(room_id):
-		return salas_ativas[room_id]
-	printerr("Erro: Tentativa de buscar sala inexistente: %s" % room_id)
-	return {}
-
-func get_starting_room_data() -> Dictionary:
+# ----------------------------------------------------------------------
+# ✅ Lógica Central: Obtém descrição longa ou curta e registra a visita.
+# ----------------------------------------------------------------------
+func get_room_description_by_status(room_id: String) -> Dictionary:
 	if not _player:
-		printerr("Erro! Player não foi definido no CommandProcessor.")
+		printerr("Erro: Player não definido no CommandProcessor.")
 		return {}
+
+	# SEGURANÇA: Garante que salas_visitadas é um Array válido.
+	if not is_instance_valid(_player.salas_visitadas) or typeof(_player.salas_visitadas) != TYPE_ARRAY:
+		_player.salas_visitadas = []
+
+	var salas_ativas = _get_active_dictionary()
+	
+	if not salas_ativas.has(room_id):
+		printerr("Erro: Tentativa de buscar sala inexistente: %s" % room_id)
+		return {}
+
+	# 1. Pega os dados completos da sala (Texto LONGO por padrão)
+	var room_data = salas_ativas[room_id].duplicate()
+	
+	var is_visited = _player.salas_visitadas.has(room_id)
+
+	# 2. Se a sala NUNCA foi visitada:
+	if not is_visited:
+		_player.salas_visitadas.append(room_id)
+		return room_data # Retorna o texto longo original.
 		
-	return get_room_data(_player.localizacao)
+	# 3. Se a sala JÁ FOI VISITADA (is_visited = TRUE):
+	
+	if _salas_resumidas.has(room_id):
+		var resume_entry = _salas_resumidas[room_id]
+		
+		# 🟢 SUBSTITUIÇÃO GARANTIDA: Se a chave DescricaoResumida existir no recurso de resumo,
+		# use seu valor para sobrescrever o campo Descricao no dicionário ativo.
+		if "DescricaoResumida" in resume_entry:
+			room_data.Descricao = resume_entry.DescricaoResumida
+		
+		# 🟢 OPCIONAL (Se você quiser que o Nome ou Saidas também sejam substituídos pelo resumo):
+		# if "Nome" in resume_entry:
+		#     room_data.Nome = resume_entry.Nome
+
+	# Retorna a descrição (agora com o texto de DescricaoResumida, se a substituição ocorreu).
+	return room_data
 
 func process_command(input_text: String) -> Dictionary:
 	if not _player:
@@ -85,28 +118,50 @@ func process_command(input_text: String) -> Dictionary:
 			return _mover("baixo")
 		"v", "ver", "olhar":
 			return _ver_sala()
+		"desc":	
+			return _ver_descricao_completa() # ✅ Comando para descrição COMPLETA
 		"limpar", "clear":
 			return _clear()
 		"ajuda":
-			return { "type": ResultType.MESSAGE, "message": _help() }
+			return { "type": ResultType.META, "command": "help", "message": _help() }
 		"salvar":
 			return { "type": ResultType.META, "command": "save", "message": "Jogo salvo." }
 		"carregar":
 			return { "type": ResultType.META, "command": "load", "message": "Jogo carregado." }
-		"menu": # NOVO: Retorna um comando META para que o GameManager o intercepte
+		"menu":	
 			return { "type": ResultType.META, "command": "menu", "message": "Retornando ao menu principal." }
 		_:
 			return { "type": ResultType.MESSAGE, "message": "Comando não reconhecido." }
 
+# ----------------------------------------------------------------------
+# ✅ Comando 'ver'/'olhar' (Retorna sempre o texto COMPLETO)
+# ----------------------------------------------------------------------
 func _ver_sala() -> Dictionary:
 	var salas_ativas = _get_active_dictionary()
+	
+	# Pega os dados COMPLETOS, ignorando o status de visita para este comando.
 	var sala_atual = salas_ativas[_player.localizacao]
+	
+	# Garante que a sala seja marcada como visitada.
+	if not _player.salas_visitadas.has(_player.localizacao):
+		_player.salas_visitadas.append(_player.localizacao)
+	
 	return {
 		"type": ResultType.ROOM,
 		"room": sala_atual,
-		"message": ""
+		"message": "Você examina atentamente o seu redor."
 	}
+	
+# ----------------------------------------------------------------------
+# ✅ Comando 'desc' (Alias para o texto COMPLETO)
+# ----------------------------------------------------------------------
+func _ver_descricao_completa() -> Dictionary:
+	# Reutiliza a lógica de _ver_sala, garantindo o texto completo.
+	return _ver_sala()
 
+# ----------------------------------------------------------------------
+# ✅ _mover (Retorna ID para que o GameManager possa buscar o resumo/completo)
+# ----------------------------------------------------------------------
 func _mover(direcao: String) -> Dictionary:
 	var salas_ativas = _get_active_dictionary()
 	var sala_atual = salas_ativas[_player.localizacao]
@@ -117,10 +172,7 @@ func _mover(direcao: String) -> Dictionary:
 		
 		_player.localizacao = proxima_sala_id
 		
-		var nova_sala = salas_ativas[_player.localizacao]
-		
 		var mensagem_saida = ""
-		
 		match direcao:
 			"cima":
 				mensagem_saida = "Você sobe."
@@ -129,11 +181,12 @@ func _mover(direcao: String) -> Dictionary:
 			"norte", "sul", "leste", "oeste":
 				mensagem_saida = "Você vai para o " + direcao + "."
 			_:
-				mensagem_saida = "Você vai para " + direcao + "."
+				mensagem_saida = "Você avança."
 		
+		# Retorna o ID da sala e a mensagem de saída.
 		return {
 			"type": ResultType.ROOM,
-			"room": nova_sala,
+			"room_id": _player.localizacao,
 			"message": mensagem_saida
 		}
 	else:
@@ -141,7 +194,7 @@ func _mover(direcao: String) -> Dictionary:
 			"type": ResultType.MESSAGE,
 			"message": "Você não pode ir nessa direção."
 		}
-		
+
 func _clear() -> Dictionary:
 	return {
 			"type": ResultType.META,
@@ -159,6 +212,7 @@ func _help() -> String:
 	- [b]baixo[/b] (ou [b]b[/b], [b]descer[/b])
 [b]Outros comandos:[/b]
 	- [b]menu[/b] voltar para o menu principal
+	- [b]desc[/b] para ler a descrição completa novamente
 	- [b]ver[/b] ([b]v[/b] ou [b]olhar[/b])
 	- [b]ajuda[/b]
 	- [b]salvar[/b]
