@@ -1,10 +1,2 @@
 res://scenes/GameManager.tscn
-res://scripts/audio_player_manager.gd
-res://scripts/game_manager.gd
-res://data/tutorial_database.gd
 res://scripts/command_processor.gd
-res://scripts/player.gd
-res://data/room.resume.gd
-res://data/tutorial_rooms.tres
-res://data/resume_rooms.tres
-res://data/room_resume.gd

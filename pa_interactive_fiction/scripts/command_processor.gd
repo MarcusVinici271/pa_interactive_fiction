@@ -71,21 +71,16 @@ func get_room_description_by_status(room_id: String) -> Dictionary:
 	# 2. Se a sala NUNCA foi visitada:
 	if not is_visited:
 		_player.salas_visitadas.append(room_id)
-		return room_data # Retorna o texto longo original.
+		return room_data 
 		
-	# 3. Se a sala JÁ FOI VISITADA (is_visited = TRUE):
-	
+		
 	if _salas_resumidas.has(room_id):
 		var resume_entry = _salas_resumidas[room_id]
 		
-		# 🟢 SUBSTITUIÇÃO GARANTIDA: Se a chave DescricaoResumida existir no recurso de resumo,
-		# use seu valor para sobrescrever o campo Descricao no dicionário ativo.
+		
 		if "DescricaoResumida" in resume_entry:
 			room_data.Descricao = resume_entry.DescricaoResumida
 		
-		# 🟢 OPCIONAL (Se você quiser que o Nome ou Saidas também sejam substituídos pelo resumo):
-		# if "Nome" in resume_entry:
-		#     room_data.Nome = resume_entry.Nome
 
 	# Retorna a descrição (agora com o texto de DescricaoResumida, se a substituição ocorreu).
 	return room_data
