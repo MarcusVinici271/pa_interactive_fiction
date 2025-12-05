@@ -1,0 +1,364 @@
+[gd_scene load_steps=25 format=3 uid="uid://bwwqgodgtxphi"]
+
+[ext_resource type="Script" uid="uid://c8xlqldro8a84" path="res://scripts/game_manager.gd" id="1_jg7te"]
+[ext_resource type="FontFile" uid="uid://de1l8ki0frcc2" path="res://assets/fonts/fonte_2/Sono/static/Sono-Regular.ttf" id="1_qppyr"]
+[ext_resource type="Script" uid="uid://cg60ek3jpw6kp" path="res://scripts/command_processor.gd" id="2_jg7te"]
+[ext_resource type="PackedScene" uid="uid://voxt45ohc8oh" path="res://scenes/InputResponse.tscn" id="2_rtub8"]
+[ext_resource type="FontFile" uid="uid://dl2qnfu1nxnjq" path="res://assets/fonts/fonte_2/Sono/static/Sono-Bold.ttf" id="3_4dhvd"]
+[ext_resource type="PackedScene" uid="uid://g40e25r5ca56" path="res://scenes/Room.tscn" id="4_mx40s"]
+[ext_resource type="Resource" uid="uid://b0oybm0cb51ff" path="res://data/all_rooms.tres" id="5_2uts2"]
+[ext_resource type="Script" uid="uid://c1jprnnxixvk1" path="res://scripts/player.gd" id="6_2chjq"]
+[ext_resource type="Script" uid="uid://cxmm6a5mi0f7f" path="res://scripts/input.gd" id="7_2uts2"]
+[ext_resource type="StyleBox" uid="uid://d3sg3b0f7o86w" path="res://styles/button.stylebox" id="10_1jauj"]
+[ext_resource type="StyleBox" uid="uid://bvruvegudvja1" path="res://styles/button_pressed.stylebox" id="11_4arur"]
+[ext_resource type="StyleBox" uid="uid://c4nogr8bx2ixg" path="res://styles/button_hover.stylebox" id="12_55cbs"]
+[ext_resource type="Script" uid="uid://dkomg0haemqu5" path="res://scripts/config.gd" id="13_55cbs"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_250vy"]
+bg_color = Color(0.051948488, 0.051948488, 0.051948488, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_34tde"]
+bg_color = Color(0.092680395, 0.092680395, 0.092680395, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qppyr"]
+content_margin_left = 25.0
+content_margin_right = 25.0
+bg_color = Color(0.16056705, 0.16056705, 0.16056705, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_250vy"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_qppyr"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_4dhvd"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jg7te"]
+bg_color = Color(0.09411765, 0.09411765, 0.09411765, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_endxa"]
+bg_color = Color(0.09411765, 0.09411765, 0.09411765, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_2chjq"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_1jauj"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_endxa"]
+
+[node name="GameManager" type="Control" node_paths=PackedStringArray("command_processor", "input_node", "history_rows_node", "scroll", "player")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_jg7te")
+command_processor = NodePath("CommandProcessor")
+input_node = NodePath("Interface/MarginContainer/HBoxContainer/Rows/HBoxContainer/InputArea/HBoxContainer/Input")
+history_rows_node = NodePath("Interface/MarginContainer/HBoxContainer/Rows/GameInfo/Scroll/MarginContainer/HistoryRows")
+input_response_scene = ExtResource("2_rtub8")
+room_scene = ExtResource("4_mx40s")
+scroll = NodePath("Interface/MarginContainer/HBoxContainer/Rows/GameInfo/Scroll")
+max_lines_remembered = 50
+player = NodePath("Player")
+
+[node name="CommandProcessor" type="Node" parent="."]
+script = ExtResource("2_jg7te")
+room_data = ExtResource("5_2uts2")
+
+[node name="Player" type="Node" parent="."]
+script = ExtResource("6_2chjq")
+
+[node name="Interface" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_250vy")
+
+[node name="MarginContainer" type="MarginContainer" parent="Interface"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Interface/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Rows" type="VBoxContainer" parent="Interface/MarginContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 20
+
+[node name="GameInfo" type="PanelContainer" parent="Interface/MarginContainer/HBoxContainer/Rows"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_34tde")
+
+[node name="Scroll" type="ScrollContainer" parent="Interface/MarginContainer/HBoxContainer/Rows/GameInfo"]
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="MarginContainer" type="MarginContainer" parent="Interface/MarginContainer/HBoxContainer/Rows/GameInfo/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 25
+theme_override_constants/margin_top = 25
+theme_override_constants/margin_right = 25
+theme_override_constants/margin_bottom = 5
+
+[node name="HistoryRows" type="VBoxContainer" parent="Interface/MarginContainer/HBoxContainer/Rows/GameInfo/Scroll/MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 50
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Interface/MarginContainer/HBoxContainer/Rows"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="InputArea" type="PanelContainer" parent="Interface/MarginContainer/HBoxContainer/Rows/HBoxContainer"]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_qppyr")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Interface/MarginContainer/HBoxContainer/Rows/HBoxContainer/InputArea"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 15
+
+[node name="Caret" type="Label" parent="Interface/MarginContainer/HBoxContainer/Rows/HBoxContainer/InputArea/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_fonts/font = ExtResource("1_qppyr")
+theme_override_font_sizes/font_size = 30
+text = ">"
+
+[node name="Input" type="LineEdit" parent="Interface/MarginContainer/HBoxContainer/Rows/HBoxContainer/InputArea/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("1_qppyr")
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxEmpty_250vy")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_qppyr")
+placeholder_text = "envie \"ajuda\" para ver os comandos básicos"
+max_length = 50
+keep_editing_on_text_submit = true
+script = ExtResource("7_2uts2")
+
+[node name="Button" type="Button" parent="Interface/MarginContainer/HBoxContainer/Rows/HBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("3_4dhvd")
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = ExtResource("10_1jauj")
+theme_override_styles/pressed = ExtResource("11_4arur")
+theme_override_styles/hover = ExtResource("12_55cbs")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_4dhvd")
+text = "Enviar"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Interface/MarginContainer/HBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Map" type="PanelContainer" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer"]
+custom_minimum_size = Vector2(600, 0)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_jg7te")
+
+[node name="ConfigPanel" type="PanelContainer" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer"]
+custom_minimum_size = Vector2(600, 0)
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_endxa")
+script = ExtResource("13_55cbs")
+
+[node name="MarginContainer2" type="MarginContainer" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2"]
+layout_mode = 2
+theme_override_constants/separation = 30
+
+[node name="PanelContainer" type="PanelContainer" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_2chjq")
+
+[node name="RichTextLabel" type="RichTextLabel" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer"]
+layout_mode = 2
+theme_override_fonts/normal_font = ExtResource("3_4dhvd")
+theme_override_font_sizes/normal_font_size = 30
+text = "Configurações"
+fit_content = true
+horizontal_alignment = 1
+
+[node name="PanelContainer2" type="PanelContainer" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxEmpty_1jauj")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2"]
+layout_mode = 2
+theme_override_constants/separation = 21
+
+[node name="TamanhoFonte" type="HBoxContainer" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer"]
+layout_mode = 2
+
+[node name="RichTextLabel" type="RichTextLabel" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/TamanhoFonte"]
+custom_minimum_size = Vector2(350, 0)
+layout_mode = 2
+theme_override_fonts/normal_font = ExtResource("1_qppyr")
+theme_override_font_sizes/normal_font_size = 30
+text = "Tamanho do texto"
+fit_content = true
+autowrap_mode = 0
+vertical_alignment = 1
+
+[node name="Diminuir" type="Button" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/TamanhoFonte"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("3_4dhvd")
+theme_override_font_sizes/font_size = 42
+theme_override_styles/normal = ExtResource("10_1jauj")
+theme_override_styles/pressed = ExtResource("11_4arur")
+theme_override_styles/hover = ExtResource("12_55cbs")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_endxa")
+text = "-"
+
+[node name="Aumentar" type="Button" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/TamanhoFonte"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("3_4dhvd")
+theme_override_font_sizes/font_size = 42
+theme_override_styles/normal = ExtResource("10_1jauj")
+theme_override_styles/pressed = ExtResource("11_4arur")
+theme_override_styles/hover = ExtResource("12_55cbs")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_endxa")
+text = "+"
+
+[node name="CorFonte" type="HBoxContainer" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer"]
+layout_mode = 2
+
+[node name="RichTextLabel" type="RichTextLabel" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/CorFonte"]
+custom_minimum_size = Vector2(350, 0)
+layout_mode = 2
+theme_override_fonts/normal_font = ExtResource("1_qppyr")
+theme_override_font_sizes/normal_font_size = 30
+text = "Cor Primária"
+fit_content = true
+autowrap_mode = 0
+vertical_alignment = 1
+
+[node name="ColorPickerButton" type="ColorPickerButton" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/CorFonte"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+color = Color(1, 1, 1, 1)
+edit_alpha = false
+edit_intensity = false
+
+[node name="CorFonte2" type="HBoxContainer" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer"]
+layout_mode = 2
+
+[node name="RichTextLabel" type="RichTextLabel" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/CorFonte2"]
+custom_minimum_size = Vector2(350, 0)
+layout_mode = 2
+theme_override_fonts/normal_font = ExtResource("1_qppyr")
+theme_override_font_sizes/normal_font_size = 30
+text = "Cor Secundária"
+fit_content = true
+autowrap_mode = 0
+vertical_alignment = 1
+
+[node name="ColorPickerButton" type="ColorPickerButton" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/CorFonte2"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+color = Color(0, 0.96862745, 0.65882355, 1)
+edit_alpha = false
+edit_intensity = false
+
+[node name="TrocarFonte" type="HBoxContainer" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer"]
+layout_mode = 2
+
+[node name="RichTextLabel" type="RichTextLabel" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/TrocarFonte"]
+custom_minimum_size = Vector2(350, 0)
+layout_mode = 2
+theme_override_fonts/normal_font = ExtResource("1_qppyr")
+theme_override_font_sizes/normal_font_size = 30
+text = "Trocar Fonte"
+fit_content = true
+autowrap_mode = 0
+vertical_alignment = 1
+
+[node name="FontSelector" type="OptionButton" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/TrocarFonte"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+item_count = 3
+popup/item_0/text = "Sono"
+popup/item_0/id = 0
+popup/item_1/text = "Nunito"
+popup/item_1/id = 1
+popup/item_2/text = "Exo"
+popup/item_2/id = 2
+
+[node name="DesativarAudio" type="HBoxContainer" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer"]
+layout_mode = 2
+
+[node name="RichTextLabel" type="RichTextLabel" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/DesativarAudio"]
+custom_minimum_size = Vector2(350, 0)
+layout_mode = 2
+theme_override_fonts/normal_font = ExtResource("1_qppyr")
+theme_override_font_sizes/normal_font_size = 30
+text = "Desativar Audio"
+fit_content = true
+autowrap_mode = 0
+vertical_alignment = 1
+
+[node name="Aumentar2" type="Button" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/DesativarAudio"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("3_4dhvd")
+theme_override_font_sizes/font_size = 34
+theme_override_styles/normal = ExtResource("10_1jauj")
+theme_override_styles/pressed = ExtResource("11_4arur")
+theme_override_styles/hover = ExtResource("12_55cbs")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_endxa")
+text = "on"
+
+[node name="Aumentar" type="Button" parent="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/DesativarAudio"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("3_4dhvd")
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = ExtResource("10_1jauj")
+theme_override_styles/pressed = ExtResource("11_4arur")
+theme_override_styles/hover = ExtResource("12_55cbs")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_endxa")
+text = "Off"
+
+[connection signal="button_down" from="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/TamanhoFonte/Diminuir" to="." method="_on_diminuir_button_down"]
+[connection signal="button_down" from="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/TamanhoFonte/Aumentar" to="." method="_on_aumentar_button_down"]
+[connection signal="picker_created" from="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/CorFonte2/ColorPickerButton" to="." method="_on_color_picker_button_picker_created"]

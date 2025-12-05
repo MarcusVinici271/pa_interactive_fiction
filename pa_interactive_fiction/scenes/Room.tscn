@@ -1,0 +1,75 @@
+[gd_scene load_steps=5 format=3 uid="uid://g40e25r5ca56"]
+
+[ext_resource type="Script" uid="uid://cq4bsxami5k6v" path="res://scripts/room.gd" id="1_hfcue"]
+[ext_resource type="FontFile" uid="uid://de1l8ki0frcc2" path="res://assets/fonts/fonte_2/Sono/static/Sono-Regular.ttf" id="2_tnfip"]
+[ext_resource type="FontFile" uid="uid://dl2qnfu1nxnjq" path="res://assets/fonts/fonte_2/Sono/static/Sono-Bold.ttf" id="3_6iwk6"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_upva6"]
+
+[node name="Room" type="VBoxContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 40
+script = ExtResource("1_hfcue")
+
+[node name="Name" type="RichTextLabel" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/default_color = Color(0, 0.96862745, 0.65882355, 1)
+theme_override_fonts/normal_font = ExtResource("3_6iwk6")
+theme_override_font_sizes/normal_font_size = 30
+theme_override_font_sizes/bold_font_size = 30
+bbcode_enabled = true
+text = "sfdfdsf"
+fit_content = true
+
+[node name="Description" type="RichTextLabel" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/line_separation = 0
+theme_override_constants/paragraph_separation = 1
+theme_override_fonts/normal_font = ExtResource("2_tnfip")
+theme_override_fonts/bold_font = ExtResource("3_6iwk6")
+theme_override_font_sizes/normal_font_size = 30
+theme_override_font_sizes/bold_font_size = 30
+bbcode_enabled = true
+text = "sdfsdfsdfsdjjjjj"
+fit_content = true
+scroll_active = false
+
+[node name="Exits" type="RichTextLabel" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/default_color = Color(0, 0.96862745, 0.65882355, 1)
+theme_override_constants/paragraph_separation = 0
+theme_override_fonts/normal_font = ExtResource("2_tnfip")
+theme_override_fonts/bold_font = ExtResource("3_6iwk6")
+theme_override_font_sizes/normal_font_size = 30
+theme_override_font_sizes/bold_font_size = 30
+bbcode_enabled = true
+text = "sfsdfsdfdsf"
+fit_content = true
+scroll_active = false
+
+[node name="Objects" type="RichTextLabel" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/paragraph_separation = 0
+theme_override_fonts/normal_font = ExtResource("2_tnfip")
+theme_override_fonts/bold_font = ExtResource("3_6iwk6")
+theme_override_font_sizes/normal_font_size = 30
+theme_override_font_sizes/bold_font_size = 30
+bbcode_enabled = true
+text = "jjjjjjjjjj"
+fit_content = true
+scroll_active = false
+
+[node name="BlankSpace" type="Panel" parent="."]
+visible = false
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_upva6")

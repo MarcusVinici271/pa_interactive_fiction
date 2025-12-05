@@ -1,0 +1,36 @@
+[gd_scene load_steps=4 format=3 uid="uid://voxt45ohc8oh"]
+
+[ext_resource type="FontFile" uid="uid://de1l8ki0frcc2" path="res://assets/fonts/fonte_2/Sono/static/Sono-Regular.ttf" id="1_nxgtd"]
+[ext_resource type="Script" uid="uid://clpmo7bc2uyq" path="res://scripts/input_response.gd" id="1_upva6"]
+[ext_resource type="FontFile" uid="uid://dl2qnfu1nxnjq" path="res://assets/fonts/fonte_2/Sono/static/Sono-Bold.ttf" id="2_upva6"]
+
+[node name="InputResponse" type="VBoxContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 40
+script = ExtResource("1_upva6")
+
+[node name="InputHistory" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5316804, 0.5316804, 0.5316804, 1)
+theme_override_fonts/font = ExtResource("1_nxgtd")
+theme_override_font_sizes/font_size = 27
+text = "> resposta"
+
+[node name="Response" type="RichTextLabel" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/paragraph_separation = 0
+theme_override_fonts/normal_font = ExtResource("1_nxgtd")
+theme_override_fonts/bold_font = ExtResource("2_upva6")
+theme_override_font_sizes/normal_font_size = 30
+theme_override_font_sizes/bold_font_size = 30
+bbcode_enabled = true
+text = "Jogo carregado."
+fit_content = true
+scroll_active = false
