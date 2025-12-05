@@ -120,39 +120,33 @@ const engine = new Engine(GODOT_CONFIG);
     const statusOverlay = document.getElementById('status');
     const statusProgress = document.getElementById('status-progress');
     const statusNotice = document.getElementById('status-notice');
-    const canvas = document.getElementById('canvas'); // Referência ao Canvas
-    let hasSetupFocus = false; // Flag para garantir que a correção seja feita uma vez.
-
-    // ----------------------------------------------------
-    // ✅ NOVO: Função JavaScript que força o foco no canvas
-    // ----------------------------------------------------
-    function setupMobileInputFocus() {
-        if (hasSetupFocus) return;
-
-        // Adiciona listeners para garantir que qualquer toque no Canvas tente focar o input.
-        // O Godot usa o Canvas para receber todos os eventos.
-        canvas.addEventListener('mousedown', attemptFocus, { once: true });
-        canvas.addEventListener('touchstart', attemptFocus, { once: true });
-        
-        // Tenta focar o Canvas (o que deve acionar o teclado virtual).
-        function attemptFocus() {
-            canvas.focus();
-        }
-        
-        // Adiciona um listener genérico para manter o foco após o primeiro toque
-        canvas.addEventListener('click', () => {
-            canvas.focus();
-        });
-        canvas.addEventListener('touchend', () => {
-            canvas.focus();
-        });
-
-        hasSetupFocus = true;
-    }
-    // ----------------------------------------------------
-
+    const canvas = document.getElementById('canvas');
     let initializing = true;
     let statusMode = '';
+
+    // ----------------------------------------------------
+    // ✅ NOVO: Função para forçar o foco no Canvas (Foco Persistente)
+    // ----------------------------------------------------
+    function attemptPersistentFocus() {
+        // Usa setTimeout para dar prioridade ao evento nativo do toque/clique.
+        setTimeout(() => {
+            if (canvas) {
+                canvas.focus();
+            }
+        }, 50);
+    }
+
+    // 🟢 Adiciona listeners agressivos em todo o corpo da página para o primeiro toque/clique.
+    // Isso garante que o navegador desbloqueie a API de input.
+    document.body.addEventListener('touchstart', attemptPersistentFocus, { once: true });
+    document.body.addEventListener('mousedown', attemptPersistentFocus, { once: true });
+
+    // 🟢 Adiciona listeners persistentes no Canvas para qualquer clique/toque subsequente
+    // que falhe em acionar o foco.
+    canvas.addEventListener('click', attemptPersistentFocus);
+    canvas.addEventListener('touchend', attemptPersistentFocus);
+    // ----------------------------------------------------
+
 
     function setStatusMode(mode) {
         if (statusMode === mode || !initializing) {
@@ -162,8 +156,8 @@ const engine = new Engine(GODOT_CONFIG);
             statusOverlay.remove();
             initializing = false;
             
-            // 🟢 CHAVE PARA O FOCO: Setup do listener ASSIM que o jogo estiver pronto para interagir.
-            setupMobileInputFocus(); 
+            // 🟢 Garante o foco logo após o carregamento, mas o listener do body é o principal.
+            attemptPersistentFocus(); 
             
             return;
         }
@@ -209,26 +203,22 @@ const engine = new Engine(GODOT_CONFIG);
             } catch (err) {
                 serviceWorkerRegistrationPromise = Promise.reject(new Error('Service worker registration failed.'));
             }
-            // There's a chance that installing the service worker would fix the issue
             Promise.race([
                 serviceWorkerRegistrationPromise.then((registration) => {
                     if (registration != null) {
-                        return Promise.reject(new Error('Service worker already exists.'));
+                        return Promise.reject(new Error('ServiceWorker already exists.'));
                     }
                     return registration;
                 }).then(() => engine.installServiceWorker()),
-                // For some reason, `getRegistration()` can stall
                 new Promise((resolve) => {
                     setTimeout(() => resolve(), 2000);
                 }),
             ]).then(() => {
-                // Reload if there was no error.
                 window.location.reload();
             }).catch((err) => {
                 console.error('Error while registering service worker:', err);
             });
         } else {
-            // Display the message as usual
             const missingMsg = 'Error\nThe following features required to run Godot projects on the Web are missing:\n';
             displayFailureNotice(missingMsg + missing.join('\n'));
         }
