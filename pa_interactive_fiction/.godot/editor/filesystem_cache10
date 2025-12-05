@@ -1,6 +1,9 @@
 72322a848ab928aa5c89f0cb78209805
-::res://::1764808143
-export_presets.cfg::TextFile::-1::1764728111::0::1::::<><><>0<>0<><>::
+::res://::1764897307
+export_presets.cfg::TextFile::-1::1764808326::0::1::::<><><>0<>0<><>::
+icone_tysadia.png::CompressedTexture2D::3072664413855081344::1763865118::1764897308::1::::<><><>0<>0<>975984d2201ff92b253c46db3ab8af3e<>res://.godot/imported/icone_tysadia.png-1d8b625535ca36621ff509f4b0aa130a.ctex::
+icone_tysadia_vivido_frio_sem_fundo (1).png::CompressedTexture2D::8190268598730741091::1763870105::1764897310::1::::<><><>0<>0<>92142bd13de10662750ea4bd4d1b98d4<>res://.godot/imported/icone_tysadia_vivido_frio_sem_fundo (1).png-dd708315d9e550f66992bb74d47bffd0.ctex::
+icone_tysadia_vivido_frio_sem_fundo.png::CompressedTexture2D::8130875021562038512::1763865785::1764897309::1::::<><><>0<>0<>eccaf9d20634dcd16972a916804217b9<>res://.godot/imported/icone_tysadia_vivido_frio_sem_fundo.png-ff27ed5812e6f121dd6591d782cd92ae.ctex::
 ::res://assets/::1763949513
 ::res://assets/audio/::1764722531
 aposentos_eleyren.ogg::AudioStreamOggVorbis::6742863801800104169::1763427340::1763432666::1::::<><><>0<>0<>c80fde53fe7ef34192a5d19cf7802832<>res://.godot/imported/aposentos_eleyren.ogg-43e182e57c060340aee37ed502c2347f.oggvorbisstr::
@@ -189,14 +192,14 @@ room_database.gd::GDScript::9065082700265044872::1764290488::0::1::::<>Resource<
 room_resume.gd::GDScript::1715151914507577026::1764727665::0::1::::<>Resource<><>0<>0<><>::
 tutorial_database.gd::GDScript::7185696156474138642::1764727665::0::1::::<>Resource<><>0<>0<><>::
 tutorial_rooms.tres::Resource::4058620101769356378::1764727665::0::1::::<><><>0<>0<><>::uid://dam2mo6rtx0ok::::res://data/tutorial_database.gd
-::res://scenes/::1764728006
+::res://scenes/::1764808190
 AudioPlayerManager.tscn::PackedScene::7979291011979611113::1763691043::0::1::::<><><>0<>0<><>::uid://b8yaym4pj20df::::res://scripts/audio_player_manager.gd
-GameManager.tscn::PackedScene::3976974481227061146::1764728006::0::1::::<><><>0<>0<><>::uid://c8xlqldro8a84::::res://scripts/game_manager.gd<>uid://de1l8ki0frcc2::::res://assets/fonts/fonte_2/Sono/static/Sono-Regular.ttf<>uid://cg60ek3jpw6kp::::res://scripts/command_processor.gd<>uid://voxt45ohc8oh::::res://scenes/InputResponse.tscn<>uid://dl2qnfu1nxnjq::::res://assets/fonts/fonte_2/Sono/static/Sono-Bold.ttf<>uid://g40e25r5ca56::::res://scenes/Room.tscn<>uid://b0oybm0cb51ff::::res://data/all_rooms.tres<>uid://c1jprnnxixvk1::::res://scripts/player.gd<>uid://bx3a46nvddkpm::::res://data/tutorial_rooms.tres<>uid://cxmm6a5mi0f7f::::res://scripts/input.gd<>uid://dn23we3s6r4fx::::res://data/resume_rooms.tres<>uid://d3sg3b0f7o86w::::res://styles/button.stylebox<>uid://bvruvegudvja1::::res://styles/button_pressed.stylebox<>uid://c4nogr8bx2ixg::::res://styles/button_hover.stylebox<>uid://dkomg0haemqu5::::res://scripts/config.gd
+GameManager.tscn::PackedScene::3976974481227061146::1764808190::0::1::::<><><>0<>0<><>::uid://c8xlqldro8a84::::res://scripts/game_manager.gd<>uid://de1l8ki0frcc2::::res://assets/fonts/fonte_2/Sono/static/Sono-Regular.ttf<>uid://cg60ek3jpw6kp::::res://scripts/command_processor.gd<>uid://voxt45ohc8oh::::res://scenes/InputResponse.tscn<>uid://dl2qnfu1nxnjq::::res://assets/fonts/fonte_2/Sono/static/Sono-Bold.ttf<>uid://g40e25r5ca56::::res://scenes/Room.tscn<>uid://b0oybm0cb51ff::::res://data/all_rooms.tres<>uid://c1jprnnxixvk1::::res://scripts/player.gd<>uid://bx3a46nvddkpm::::res://data/tutorial_rooms.tres<>uid://cxmm6a5mi0f7f::::res://scripts/input.gd<>uid://dn23we3s6r4fx::::res://data/resume_rooms.tres<>uid://d3sg3b0f7o86w::::res://styles/button.stylebox<>uid://bvruvegudvja1::::res://styles/button_pressed.stylebox<>uid://c4nogr8bx2ixg::::res://styles/button_hover.stylebox<>uid://dkomg0haemqu5::::res://scripts/config.gd
 InputResponse.tscn::PackedScene::1504298996040192807::1763691048::0::1::::<><><>0<>0<><>::uid://de1l8ki0frcc2::::res://assets/fonts/fonte_2/Sono/static/Sono-Regular.ttf<>uid://clpmo7bc2uyq::::res://scripts/input_response.gd<>uid://dl2qnfu1nxnjq::::res://assets/fonts/fonte_2/Sono/static/Sono-Bold.ttf
 Room.tscn::PackedScene::482526549977867307::1764637914::0::1::::<><><>0<>0<><>::uid://cq4bsxami5k6v::::res://scripts/room.gd<>uid://de1l8ki0frcc2::::res://assets/fonts/fonte_2/Sono/static/Sono-Regular.ttf<>uid://dl2qnfu1nxnjq::::res://assets/fonts/fonte_2/Sono/static/Sono-Bold.ttf
-::res://scripts/::1764728006
+::res://scripts/::1764808190
 audio_player_manager.gd::GDScript::4752241124673500247::1764722680::0::1::::<>AudioStreamPlayer<><>0<>0<><>::
-command_processor.gd::GDScript::5259495776502920479::1764728006::0::1::::<>Node<><>0<>0<><>::
+command_processor.gd::GDScript::5259495776502920479::1764808190::0::1::::<>Node<><>0<>0<><>::
 config.gd::GDScript::7890792418596311526::1763258584::0::1::::<>PanelContainer<><>0<>0<><>::
 game_manager.gd::GDScript::7137250938591228999::1764727665::0::1::::<>Control<><>0<>0<><>::
 input.gd::GDScript::6412741314534951329::1763078012::0::1::::<>LineEdit<><>0<>0<><>::
