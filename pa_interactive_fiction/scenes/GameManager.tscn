@@ -161,6 +161,7 @@ text = ">"
 [node name="Input" type="LineEdit" parent="Interface/MarginContainer/HBoxContainer/Rows/HBoxContainer/InputArea/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
+accessibility_live = 1
 theme_override_fonts/font = ExtResource("1_qppyr")
 theme_override_font_sizes/font_size = 30
 theme_override_styles/normal = SubResource("StyleBoxEmpty_250vy")
@@ -170,7 +171,7 @@ max_length = 50
 keep_editing_on_text_submit = true
 script = ExtResource("7_2uts2")
 
-[node name="Button" type="Button" parent="Interface/MarginContainer/HBoxContainer/Rows/HBoxContainer"]
+[node name="Enviar" type="Button" parent="Interface/MarginContainer/HBoxContainer/Rows/HBoxContainer"]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("3_4dhvd")
 theme_override_font_sizes/font_size = 30
@@ -339,6 +340,7 @@ theme_override_styles/hover = ExtResource("12_55cbs")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_endxa")
 text = "Off"
 
+[connection signal="button_down" from="Interface/MarginContainer/HBoxContainer/Rows/HBoxContainer/Enviar" to="." method="_on_botao_enviar_pressed"]
 [connection signal="button_down" from="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/TamanhoFonte/Diminuir" to="." method="_on_diminuir_button_down"]
 [connection signal="button_down" from="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/TamanhoFonte/Aumentar" to="." method="_on_aumentar_button_down"]
 [connection signal="picker_created" from="Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/CorFonte2/ColorPickerButton" to="." method="_on_color_picker_button_picker_created"]

@@ -1,0 +1,3 @@
+res://scripts/input.gd
+res://scenes/GameManager.tscn
+res://scripts/game_manager.gd

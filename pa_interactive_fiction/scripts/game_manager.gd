@@ -64,7 +64,7 @@ var _selected_font: Font = fonts["Fonte Padrao"]
 @onready var cpb1: ColorPickerButton = $Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/CorFonte/ColorPickerButton
 @onready var color_buttons: =[cpb1, cpb2]
 @onready var font_selector: OptionButton = $Interface/MarginContainer/HBoxContainer/VBoxContainer/ConfigPanel/MarginContainer2/VBoxContainer/PanelContainer2/VBoxContainer/TrocarFonte/FontSelector
-
+@onready var _botao_enviar: Button = $Interface/MarginContainer/HBoxContainer/Rows/HBoxContainer/Enviar
 # --- [ FUNÇÕES BÁSICAS DE CICLO DE VIDA ] ---
 
 func _exibir_menu_principal() -> void:
@@ -87,9 +87,13 @@ Por favor, digite uma opção para começar:
 func _ready() -> void:
 	if input_node:
 		input_node.text_submitted.connect(_on_input_submitted)
+		input_node.gui_input.connect(_on_input_gui_input)
 	else:
 		printerr("Erro: 'input_node' não foi atribuído no GameManager.")
-
+	if _botao_enviar:
+		_botao_enviar.pressed.connect(_on_botao_enviar_pressed)
+	else:
+		printerr("Erro: O botão 'Enviar' não foi atribuído no GameManager.")
 	if scroll:
 		_scroll_bar = scroll.get_v_scroll_bar()
 		_scroll_bar.changed.connect(_handle_scrollbar_changed)
@@ -118,6 +122,7 @@ func _ready() -> void:
 		_audio_on_button.pressed.connect(_on_audio_on_pressed)
 		_audio_off_button.pressed.connect(_on_audio_off_pressed)
 		
+
 func _start_game() -> void:
 	_clear_history()
 	
@@ -310,6 +315,17 @@ func _on_input_submitted(new_text: String) -> void:
 
 	input_node.text = ""
 
+func _on_botao_enviar_pressed() -> void:
+	if input_node:
+		var text_to_submit = input_node.text
+		
+		# 1. Chama a função principal de processamento de input
+		_on_input_submitted(text_to_submit)
+		input_node.grab_focus()
+		
+func _force_focus_on_input() -> void:
+	if input_node:
+		input_node.grab_focus()
 # --- [ LÓGICA DE SALVAR/CARREGAR ] ---
 
 func _save_game() -> void:
@@ -548,3 +564,8 @@ func _on_audio_off_pressed() -> void:
 	_audio_habilitado = false
 	AudioPlayer.parar_audio()
 	#_update_audio_buttons_ui()
+	
+func _on_input_gui_input(event: InputEvent) -> void:
+	# Checa se o evento é um clique/toque (InputEventMouseButton)
+	if event is InputEventMouseButton and event.pressed:
+		_force_focus_on_input()
